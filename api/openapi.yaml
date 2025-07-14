@@ -1,0 +1,2718 @@
+openapi: 3.0.0
+info:
+  title: NAVI API
+  description: 전체 API (Auth, Main, Users, Graduation, Curriculums, Chatbot, Lectures)
+  version: 1.0.0
+servers:
+  - url: https://virtserver.swaggerhub.com/NAVI_TUK/NAVI-API/1.0.0
+    description: SwaggerHub API Auto Mocking
+  - url: http://localhost:3000
+    description: Local server
+# 기본 보안 설정 (Bearer 토큰)
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+    description: 인증/인가 (회원가입, 로그인, 이메일·휴대폰·토큰 처리 등)
+  - name: Main
+    description: 대시보드 및 기본 정보 관련 API
+  - name: Records
+    description: 수강 내역 및 관련 기록 관리 API
+  - name: Researches
+    description: 현장연구 이슈 내역 API
+  - name: Certificate
+    description: 어학 자격 등록 및 삭제 API
+  - name: Profile
+    description: 사용자 정보 조회 및 수정 API
+  - name: Graduation
+    description: 졸업 요건 관련 API
+  - name: Curriculums
+    description: 커리큘럼 관리 API
+  - name: Chatbot
+    description: 챗봇, 사용자 선호도, 대화 기록 등 API
+  - name: Lectures
+    description: 강의 정보, 검색, 리뷰, 로드맵 등 API
+
+paths:
+ ##############################################
+  # [ Main / Auth ] - File1
+  ##############################################
+  /curriculums/default:
+    get:
+      tags:
+        - Main
+      summary: 대시보드 커리큘럼 조회
+      description: 대시보드 화면에서 기본 커리큘럼 정보를 조회합니다.
+      operationId: getDefaultCurriculum
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '200':
+          description: 기본 커리큘럼 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  curriculumId:
+                    type: string
+                  name:
+                    type: string
+                  courses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        courseId:
+                          type: string
+                        courseName:
+                          type: string
+              examples:
+                success:
+                  value:
+                    curriculumId: "2023-base"
+                    name: "기본 커리큘럼"
+                    courses:
+                      - courseId: "CSE101"
+                        courseName: "컴퓨터개론"
+                      - courseId: "CSE201"
+                        courseName: "자료구조"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Curriculums
+      summary: 기본 커리큘럼 설정
+      description: 기본 커리큘럼으로 설정합니다.
+      operationId: curriculumsDefaultPOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/curriculums_default_body'
+      responses:
+        '200':
+          description: 기본 커리큘럼 설정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/records/credits:
+    get:
+      tags:
+        - Main
+      summary: 이수 학점 조회 및 확정 처리
+      description: 사용자의 이수 학점을 조회하고 확정 처리합니다.
+      operationId: getRecordsCredits
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '200':
+          description: 이수 학점 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalCredits:
+                    type: integer
+                  completedCredits:
+                    type: integer
+                  remainingCredits:
+                    type: integer
+              examples:
+                success:
+                  value:
+                    totalCredits: 130
+                    completedCredits: 90
+                    remainingCredits: 40
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500': 
+          $ref: '#/components/responses/InternalServerError'
+
+  /graduation/pass:
+    get:
+      tags:
+        - Graduation
+      summary: 항목별 통과 여부 조회
+      description: 졸업 요건 각 항목별 통과 여부를 조회합니다.
+      operationId: getGraduationPass
+      parameters:
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+            description: Bearer {accessToken}
+      responses:
+        '200':
+          description: 항목별 통과 여부 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /graduation/required-missing:
+    get:
+      tags:
+        - Graduation
+      summary: 미이수 필수 과목 조회
+      description: 아직 이수하지 못한 필수 과목 목록을 조회합니다.
+      operationId: getRequiredMissing
+      parameters:
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 미이수 필수 과목 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /graduation/core:
+    get:
+      tags:
+        - Graduation
+      summary: 핵심 교양 이수 조회
+      description: 핵심 교양 과목 이수 내역을 조회합니다.
+      operationId: getCoreCompletion
+      parameters:
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 핵심 교양 이수 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/timetable/current:
+    get:
+      tags:
+        - Main
+      summary: 현재 학기 시간표 조회
+      description: 로그인된 사용자의 현재 학기 시간표를 조회합니다.
+      operationId: getCurrentTimetable
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '200':
+          description: 현재 학기 시간표 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # --- Auth 엔드포인트 (File1) ---
+  /auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: 회원가입
+      operationId: signup
+      description: 이메일/비밀번호 등 일반 회원가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+            examples:
+              signupExample:
+                value:
+                  email: "test@example.com"
+                  password: "test1234!"
+                  username: "홍길동"
+      responses:
+        '201':
+          description: 회원가입 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/signup/kakao:
+    post:
+      tags:
+        - Auth
+      summary: 카카오 회원가입
+      operationId: signupKakao
+      description: 카카오 소셜 계정을 통한 회원가입
+      responses:
+        '201':
+          description: 카카오 회원가입 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/signup/google:
+    post:
+      tags:
+        - Auth
+      summary: 구글 회원가입
+      operationId: signupGoogle
+      description: 구글 소셜 계정을 통한 회원가입
+      responses:
+        '201':
+          description: 구글 회원가입 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/account:
+    get:
+      tags:
+        - Auth
+      summary: 회원 정보 조회
+      operationId: getAccount
+      description: 현재 로그인된 회원 정보 조회
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '200':
+          description: 회원 정보 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Auth
+      summary: 회원 정보 수정
+      operationId: updateAccount
+      description: 회원 정보(닉네임, 전공 등) 수정
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+            examples:
+              updateExample:
+                value:
+                  username: "박진한"
+                  major: "컴퓨터공학과"
+      responses:
+        '200':
+          description: 회원 정보 수정 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Auth
+      summary: 회원 탈퇴
+      operationId: deleteAccount
+      description: 회원 계정 탈퇴
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '204':
+          description: 회원 탈퇴 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/email-verification:
+    post:
+      tags:
+        - Auth
+      summary: 이메일 인증(코드 발송)
+      operationId: emailVerification
+      description: 회원가입 과정에서 이메일 인증 코드를 발송합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+            examples:
+              emailVerificationExample:
+                value:
+                  email: "test@example.com"
+      responses:
+        '200':
+          description: 인증 메일 전송 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/email-duplication:
+    get:
+      tags:
+        - Auth
+      summary: 이메일 중복 검사
+      operationId: emailDuplication
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 중복 체크할 이메일 주소
+      responses:
+        '200':
+          description: 이메일 중복 결과
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/email-confirmation:
+    post:
+      tags:
+        - Auth
+      summary: 이메일 인증번호 확인
+      operationId: emailConfirmation
+      description: 발송된 인증번호를 확인하여 이메일 인증 완료
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                code:
+                  type: string
+              required:
+                - email
+                - code
+      responses:
+        '200':
+          description: 이메일 인증 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/password-reset:
+    post:
+      tags:
+        - Auth
+      summary: 비밀번호 초기화 이메일 발송
+      operationId: passwordReset
+      description: 비밀번호 재설정을 위한 링크/토큰을 이메일로 전송
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: 비밀번호 초기화 메일 전송 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/phone-verification:
+    post:
+      tags:
+        - Auth
+      summary: 휴대폰 번호 인증
+      operationId: phoneVerification
+      description: 휴대폰 인증번호 발송 및 확인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+              required:
+                - phone
+      responses:
+        '200':
+          description: 휴대폰 인증 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 로그인
+      operationId: login
+      description: 이메일/비밀번호로 로그인
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+              examples:
+                success:
+                  value:
+                    accessToken: "jwt-access-token"
+                    refreshToken: "jwt-refresh-token"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/login/kakao:
+    post:
+      tags:
+        - Auth
+      summary: 카카오 소셜 로그인
+      operationId: loginKakao
+      description: 카카오 계정을 통한 로그인 처리
+      responses:
+        '200':
+          description: 카카오 로그인 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/login/google:
+    post:
+      tags:
+        - Auth
+      summary: 구글 소셜 로그인
+      operationId: loginGoogle
+      description: 구글 계정을 통한 로그인 처리
+      responses:
+        '200':
+          description: 구글 로그인 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/session:
+    delete:
+      tags:
+        - Auth
+      summary: 로그아웃
+      operationId: logout
+      description: 사용자 세션 삭제(로그아웃)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '204':
+          description: 로그아웃 완료
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: 최초 로그인 시 회원 등록
+      operationId: register
+      description: 소셜 로그인 시 필요한 추가 정보 입력
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                major:
+                  type: string
+              required:
+                - username
+                - major
+      responses:
+        '201':
+          description: 회원 등록 완료
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/token:
+    post:
+      tags:
+        - Auth
+      summary: JWT 토큰 발급
+      operationId: issueToken
+      description: 자격 증명 확인 후 토큰 발급(리프레시 토큰 등)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+              required:
+                - refresh_token
+      responses:
+        '200':
+          description: 토큰 발급 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+              examples:
+                success:
+                  value:
+                    accessToken: "new-jwt-access-token"
+                    refreshToken: "new-jwt-refresh-token"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/id-recovery/phone:
+    post:
+      tags:
+        - Auth
+      summary: 전화번호 인증으로 아이디 찾기
+      operationId: idRecoveryByPhone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+              required:
+                - phone
+      responses:
+        '200':
+          description: 아이디 찾기 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/password-recovery/email:
+    delete:
+      tags:
+        - Auth
+      summary: 이메일 인증으로 비밀번호 찾기
+      operationId: passwordRecoveryByEmail
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 비밀번호를 복구할 이메일 주소
+      responses:
+        '200':
+          description: 비밀번호 복구 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  ##############################################
+  # [ Users / Graduation / Records / Others ] - File2
+  ##############################################
+  /users/records:
+    get:
+      tags:
+        - Records
+      summary: 수강 내역 조회
+      description: 수강 내역을 조회합니다.
+      operationId: usersRecordsGET
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationHeader'
+      responses:
+        '200':
+          description: 수강 내역 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_4'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/records/capture:
+    post:
+      tags:
+        - Records
+      summary: 수강 내역 캡처본 등록
+      description: 수강 내역 캡처본을 등록합니다.
+      operationId: usersRecordsCapturePOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/records_capture_body'
+      responses:
+        '201':
+          description: 수강 내역 캡처본 등록 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/records/file:
+    post:
+      tags:
+        - Records
+      summary: 수강 내역 pdf 등록
+      description: 수강 내역 pdf 파일을 등록합니다.
+      operationId: usersRecordsFilePOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/records_file_body'
+      responses:
+        '201':
+          description: 수강 내역 pdf 등록 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user/records/direct-input:
+    post:
+      tags:
+        - Records
+      summary: 수강 내역 직접 입력
+      description: 수강 내역을 직접 입력합니다.
+      operationId: userRecordsDirect_inputPOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/records_directinput_body'
+      responses:
+        '201':
+          description: 수강 내역 직접 입력 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/records/{record_id}:
+    put:
+      tags:
+        - Records
+      summary: 수강 내역 수정
+      description: 특정 수강 내역을 수정합니다.
+      operationId: usersRecordsRecord_idPUT
+      parameters:
+        - name: record_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+          example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/records_record_id_body'
+      responses:
+        '200':
+          description: 수강 내역 수정 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Records
+      summary: 수강 내역 삭제
+      description: 특정 수강 내역을 삭제합니다.
+      operationId: usersRecordsRecord_idDELETE
+      parameters:
+        - name: record_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+          example: 123
+      responses:
+        '200':
+          description: 수강 내역 삭제 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/records/reviews:
+    put:
+      tags:
+        - Records
+      summary: 강의 리뷰 수정
+      description: 작성된 강의 리뷰를 수정합니다.
+      operationId: usersRecordsReviewsPUT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/records_reviews_body'
+      responses:
+        '200':
+          description: 강의 리뷰 수정 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Records
+      summary: 강의 리뷰 작성
+      description: 새로운 강의 리뷰를 작성합니다.
+      operationId: usersRecordsReviewsPOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/records_reviews_body_1'
+      responses:
+        '201':
+          description: 강의 리뷰 작성 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/researches:
+    get:
+      tags:
+        - Researches
+      summary: 현장연구 내역 조회
+      description: 현장연구 이슈 내역을 조회합니다.
+      operationId: usersResearchesGET
+      responses:
+        '200':
+          description: 현장연구 내역 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Researches
+      summary: 현장연구 이슈 내역 등록
+      description: 새로운 현장연구 이슈 내역을 등록합니다.
+      operationId: usersResearchesPOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_researches_body'
+      responses:
+        '201':
+          description: 현장연구 이슈 내역 등록 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/researches/{research_id}:
+    put:
+      tags:
+        - Researches
+      summary: 현장연구 이슈 내역 수정
+      description: 특정 현장연구 이슈 내역을 수정합니다.
+      operationId: usersResearchesResearch_idPUT
+      parameters:
+        - name: research_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+          example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/researches_research_id_body'
+      responses:
+        '200':
+          description: 현장연구 이슈 내역 수정 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Researches
+      summary: 현장연구 이슈 내역 삭제
+      description: 특정 현장연구 이슈 내역을 삭제합니다.
+      operationId: usersResearchesResearch_idDELETE
+      parameters:
+        - name: research_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+          example: 123
+      responses:
+        '200':
+          description: 현장연구 이슈 내역 삭제 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/certificate:
+    post:
+      tags:
+        - Certificate
+      summary: 어학 자격 등록
+      description: 어학 자격 정보를 등록합니다.
+      operationId: usersCertificatePOST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_certificate_body'
+      responses:
+        '201':
+          description: 어학 자격 등록 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/certificate/{certificate_id}:
+    delete:
+      tags:
+        - Certificate
+      summary: 어학 자격 삭제
+      description: 특정 어학 자격 정보를 삭제합니다.
+      operationId: usersCertificateCertificate_idDELETE
+      parameters:
+        - name: certificate_id
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+          example: 456
+      responses:
+        '200':
+          description: 어학 자격 삭제 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/profile:
+    get:
+      tags:
+        - Profile
+      summary: 사용자 정보 조회
+      description: 사용자 기본 정보를 조회합니다.
+      operationId: usersProfileGET
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Profile
+      summary: 사용자 정보 수정
+      description: 사용자 기본 정보를 수정합니다.
+      operationId: usersProfilePUT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_profile_body'
+      responses:
+        '200':
+          description: 사용자 정보 수정 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /graduation/status:
+    get:
+      tags:
+        - Graduation
+      summary: 졸업사정기준 취득현황 조회
+      description: 졸업사정기준에 대한 취득현황을 조회합니다.
+      operationId: graduationStatusGET
+      responses:
+        '200':
+          description: 졸업사정기준 취득현황 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /graduation/required:
+    get:
+      tags:
+        - Graduation
+      summary: 필수과목 이수 내역 조회
+      description: 필수과목 이수 내역을 조회합니다.
+      operationId: graduationRequiredGET
+      responses:
+        '200':
+          description: 필수과목 이수 내역 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /graduation/disqualification:
+    get:
+      tags:
+        - Graduation
+      summary: 졸업결격 사유 조회
+      description: 졸업결격 사유를 조회합니다.
+      operationId: graduationDisqualificationGET
+      responses:
+        '200':
+          description: 졸업결격 사유 조회 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  ##############################################
+  # [ Curriculums / Chatbot / Lectures ] - File3
+  ##############################################
+  /curriculums:
+    get:
+      tags:
+        - Curriculums
+      summary: 내 커리큘럼 조회
+      operationId: curriculumsGET
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            example: application/json
+      responses:
+        '200':
+          description: 커리큘럼 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 커리큘럼 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+  /curriculums/{curri_id}:
+    get:
+      tags:
+        - Curriculums
+      summary: 커리큘럼 상세 조회
+      operationId: curriculumsCurri_idGET
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            example: application/json
+        - name: curri_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 커리큘럼 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 커리큘럼 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+    delete:
+      tags:
+        - Curriculums
+      summary: 커리큘럼 삭제
+      operationId: curriculumsCurri_idDELETE
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: curri_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 커리큘럼 삭제 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 커리큘럼 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+  /curriculums/{curri_id}/lectures:
+    post:
+      tags:
+        - Curriculums
+      summary: 과목 추가
+      operationId: curriculumsCurri_idLecturesPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: curri_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/curri_id_lectures_body'
+      responses:
+        '201':
+          description: 선택한 강의가 추가되었습니다.
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 커리큘럼 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '409':
+          description: 이미 추가된 강의입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+  /curriculums/{curri_id}/lectures/{lect_id}:
+    put:
+      tags:
+        - Curriculums
+      summary: 과목 순서 수정
+      operationId: curriculumsCurri_idLecturesLect_idPUT
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: curri_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: lect_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/lectures_lect_id_body'
+      responses:
+        '200':
+          description: 과목 순서 수정 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 강의 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+    delete:
+      tags:
+        - Curriculums
+      summary: 과목 삭제
+      operationId: curriculumsCurri_idLecturesLect_idDELETE
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: curri_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: lect_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 과목 삭제 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+  /curriculums/{curri_id}/opinions:
+    post:
+      tags:
+        - Curriculums
+      summary: 의견 공유
+      operationId: curriculumsCurri_idOpinionsPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: curri_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/curri_id_opinions_body'
+      responses:
+        '201':
+          description: 의견 공유 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Curriculums
+  /users/status:
+    get:
+      tags:
+        - Chatbot
+      summary: 학적 상태 확인
+      operationId: usersStatusGET
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 학적 상태 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_3'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /users/preference:
+    get:
+      tags:
+        - Chatbot
+      summary: 관심 분야 조회
+      operationId: usersPreferenceGET
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 관심 분야 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_5'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+    post:
+      tags:
+        - Chatbot
+      summary: 관심 분야 및 목적 설정
+      operationId: usersPreferencePOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_preference_body'
+      responses:
+        '200':
+          description: 관심 분야 설정 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+    delete:
+      tags:
+        - Chatbot
+      summary: 관심 분야 삭제
+      operationId: usersPreferenceDELETE
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 관심 분야 삭제 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /curriculums/from-chatbot:
+    post:
+      tags:
+        - Chatbot
+      summary: 내 커리큘럼으로 추가
+      operationId: curriculumsFrom_chatbotPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/curriculums_fromchatbot_body'
+      responses:
+        '201':
+          description: 커리큘럼 추가 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /chat/messages:
+    post:
+      tags:
+        - Chatbot
+      summary: 챗봇 메시지 처리
+      operationId: chatMessagesPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/chat_messages_body'
+      responses:
+        '200':
+          description: 챗봇 응답 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_6'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /chat/user-info/{user_id}:
+    get:
+      tags:
+        - Chatbot
+      summary: 사용자 기본 정보 가져오기
+      operationId: chatUser_infoUser_idGET
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 사용자 기본 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_7'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '404':
+          description: 사용자 정보를 찾을 수 없습니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /chat/user-info:
+    post:
+      tags:
+        - Chatbot
+      summary: 사용자 기본 정보 전달
+      operationId: chatUser_infoPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/chat_userinfo_body'
+      responses:
+        '200':
+          description: 사용자 기본 정보 저장 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_8'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /chat/chatting-logs:
+    post:
+      tags:
+        - Chatbot
+      summary: 대화 로그 저장
+      operationId: chatChatting_logsPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/chat_chattinglogs_body'
+      responses:
+        '201':
+          description: 대화 로그 저장 성공
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /chat/chatting-logs/{user_id}:
+    get:
+      tags:
+        - Chatbot
+      summary: 대화 로그 조회
+      operationId: chatChatting_logsUser_idGET
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 대화 로그 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_9'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Chatbot
+  /lectures/details:
+    get:
+      tags:
+        - Lectures
+      summary: 강의 내용 확인
+      operationId: lecturesDetailsGET
+      parameters:
+        - name: lect_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 강의 내용 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_10'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/pre-requisite:
+    get:
+      tags:
+        - Lectures
+      summary: 선후수 과목 조회
+      operationId: lecturesPre_requisiteGET
+      parameters:
+        - name: lect_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 선후수 과목 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_11'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/basic-knowledge:
+    get:
+      tags:
+        - Lectures
+      summary: 기초 지식 조회
+      operationId: lecturesBasic_knowledgeGET
+      parameters:
+        - name: lect_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 기초 지식 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_12'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/reviews:
+    get:
+      tags:
+        - Lectures
+      summary: 강의 리뷰 조회
+      operationId: lecturesReviewsGET
+      parameters:
+        - name: lect_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 강의 리뷰 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_13'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/roadmap:
+    get:
+      tags:
+        - Lectures
+      summary: 학습 로드맵 조회
+      operationId: lecturesRoadmapGET
+      parameters:
+        - name: lect_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 학습 로드맵 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_14'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/search-by-name:
+    get:
+      tags:
+        - Lectures
+      summary: 과목명 검색
+      operationId: lecturesSearch_by_nameGET
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 과목 검색 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_15'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/search-by-professor:
+    get:
+      tags:
+        - Lectures
+      summary: 교수명 검색
+      operationId: lecturesSearch_by_professorGET
+      parameters:
+        - name: professor
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 교수명으로 강의 검색 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_15'
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+  /lectures/add-to-curriculum:
+    post:
+      tags:
+        - Lectures
+      summary: 커리큘럼에 담기
+      operationId: lecturesAdd_to_curriculumPOST
+      parameters:
+        - name: Authorization
+          in: header
+          description: "Access Token (type: Bearer)"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/lectures_addtocurriculum_body'
+      responses:
+        '201':
+          description: 강의가 커리큘럼에 추가됨
+        '400':
+          description: 잘못된 요청입니다.
+        '401':
+          description: 인증되지 않은 요청입니다.
+        '403':
+          description: 리소스 접근 권한이 없습니다.
+        '404':
+          description: 정보를 찾을 수 없습니다.
+        '405':
+          description: 잘못된 HTTP 메서드 요청입니다.
+        '500':
+          description: 서버 내부 오류가 발생했습니다.
+      x-swagger-router-controller: Lectures
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    AuthorizationHeader:
+      name: Authorization
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Bearer {accessToken}
+  responses:
+    BadRequest:
+      description: 잘못된 요청 (HTTP 400)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e4000:
+              value:
+                code: e4000
+                message: 잘못된 요청입니다.
+    Unauthorized:
+      description: 인증 실패 (HTTP 401)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e4010:
+              value:
+                code: e4010
+                message: 리소스 접근 권한이 없습니다.
+    Forbidden:
+      description: 권한 없음 (HTTP 403)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e4030:
+              value:
+                code: e4030
+                message: 리소스 접근 권한이 없습니다.
+    NotFound:
+      description: 리소스를 찾을 수 없음 (HTTP 404)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e4040:
+              value:
+                code: e4040
+                message: 요청한 리소스를 찾을 수 없습니다.
+    MethodNotAllowed:
+      description: 잘못된 HTTP 메서드 요청 (HTTP 405)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e4050:
+              value:
+                code: e4050
+                message: 잘못된 HTTP 메서드 요청입니다.
+    Conflict:
+      description: 중복 리소스, 이미 존재하는 데이터 (HTTP 409)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e4090:
+              value:
+                code: e4090
+                message: 이미 존재하는 리소스입니다.
+    InternalServerError:
+      description: 서버 내부 오류 (HTTP 500)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            e5000:
+              value:
+                code: e5000
+                message: 서버 내부 오류입니다.
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 에러 코드 (예: e4000, e4010 등)
+        message:
+          type: string
+          description: 에러 메시지
+    SignupRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: 회원 이메일
+        password:
+          type: string
+          format: password
+          description: 회원 비밀번호
+        username:
+          type: string
+          description: 회원 닉네임
+      required:
+        - email
+        - password
+        - username
+    UpdateAccountRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: 변경할 닉네임
+        major:
+          type: string
+          description: 변경할 전공명
+      required:
+        - username
+        - major
+    records_capture_body:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        file:
+          type: string
+          format: binary
+    records_file_body:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        file:
+          type: string
+          format: binary
+    records_directinput_body:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        record:
+          type: string
+          example: Sample Record
+    records_record_id_body:
+      type: object
+      properties:
+        record:
+          type: string
+          example: Updated Record
+    users_researches_body:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        issue:
+          type: string
+          example: Sample issue description
+    researches_research_id_body:
+      type: object
+      properties:
+        issue:
+          type: string
+          example: Updated issue description
+    users_certificate_body:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        certificate_name:
+          type: string
+          example: TOEIC
+        score:
+          type: integer
+          example: 900
+    users_profile_body:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john.doe@example.com
+    records_reviews_body:
+      type: object
+      properties:
+        review:
+          type: string
+          example: Updated review of the course.
+    records_reviews_body_1:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        review:
+          type: string
+          example: This is a review of the course.
+    inline_response_200:
+      type: object
+      properties:
+        curriculums:
+          type: array
+          items:
+            type: object
+            properties:
+              curri_id:
+                type: integer
+              name:
+                type: string
+              total_credits:
+                type: integer
+              created_at:
+                type: string
+                format: date-time
+              # 세부 항목은 필요에 따라 확장
+            example:
+              curri_id: 0
+              name: name
+              total_credits: 6
+              created_at: 2000-01-23T04:56:07.000+00:00
+      example:
+        curriculums:
+          - curri_id: 0
+            name: name
+            total_credits: 6
+            created_at: 2000-01-23T04:56:07.000+00:00
+    inline_response_200_1:
+      type: object
+      properties:
+        curri_id:
+          type: integer
+        name:
+          type: string
+        total_credits:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        lectures:
+          type: array
+          items:
+            type: object
+            properties:
+              lect_id:
+                type: integer
+              name:
+                type: string
+              code:
+                type: string
+              credits:
+                type: integer
+              lect_order:
+                type: integer
+            example:
+              lect_id: 1
+              name: name
+              code: code
+              credits: 5
+              lect_order: 5
+      example:
+        curri_id: 0
+        name: name
+        total_credits: 6
+        created_at: 2000-01-23T04:56:07.000+00:00
+        lectures:
+          - lect_id: 1
+            name: name
+            code: code
+            credits: 5
+            lect_order: 5
+    curriculums_default_body:
+      type: object
+      properties:
+        curri_id:
+          type: integer
+    inline_response_200_2:
+      type: object
+      properties:
+        curri_id:
+          type: integer
+        message:
+          type: string
+          example: 기본 커리큘럼이 설정되었습니다.
+      example:
+        curri_id: 0
+        message: 기본 커리큘럼이 설정되었습니다.
+    curri_id_lectures_body:
+      type: object
+      properties:
+        lect_id:
+          type: integer
+        lect_order:
+          type: integer
+          description: 생략 시 마지막 순서로 배치됩니다.
+    lectures_lect_id_body:
+      type: object
+      properties:
+        lect_order:
+          type: integer
+    curri_id_opinions_body:
+      type: object
+      properties:
+        opinion:
+          type: string
+    inline_response_200_3:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 재학
+      example:
+        status: 재학
+    inline_response_200_4:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              lect_id:
+                type: integer
+              name:
+                type: string
+              credits:
+                type: integer
+              score:
+                type: integer
+            example:
+              lect_id: 0
+              name: name
+              credits: 6
+              score: 1
+      example:
+        records:
+          - lect_id: 0
+            name: name
+            credits: 6
+            score: 1
+          - lect_id: 0
+            name: name
+            credits: 6
+            score: 1
+    inline_response_200_5:
+      type: object
+      properties:
+        preferences:
+          type: array
+          items:
+            type: string
+      example:
+        preferences:
+          - preference1
+          - preference2
+    users_preference_body:
+      type: object
+      properties:
+        preferences:
+          type: array
+          items:
+            type: string
+    curriculums_fromchatbot_body:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        lect_id:
+          type: array
+          items:
+            type: integer
+    inline_response_201:
+      type: object
+      properties:
+        curri_id:
+          type: integer
+        message:
+          type: string
+          example: 해당 커리큘럼이 나의 커리큘럼으로 추가되었습니다.
+      example:
+        curri_id: 0
+        message: 해당 커리큘럼이 나의 커리큘럼으로 추가되었습니다.
+    chat_messages_body:
+      type: object
+      properties:
+        message:
+          type: string
+    inline_response_200_6:
+      type: object
+      properties:
+        response:
+          type: string
+      example:
+        response: response
+    inline_response_200_7:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        username:
+          type: string
+        major:
+          type: string
+        admission_year:
+          type: integer
+        grade:
+          type: integer
+        status:
+          type: string
+          example: 재학
+        email:
+          type: string
+      example:
+        user_id: 0
+        username: username
+        major: major
+        admission_year: 2020
+        grade: 2
+        status: 재학
+        email: email@example.com
+    chat_userinfo_body:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        username:
+          type: string
+        major:
+          type: string
+        admission_year:
+          type: integer
+        grade:
+          type: integer
+        status:
+          type: string
+          example: 재학
+        email:
+          type: string
+    inline_response_200_8:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 사용자 정보가 정상적으로 저장되었습니다.
+      example:
+        message: 사용자 정보가 정상적으로 저장되었습니다.
+    chat_chattinglogs_body:
+      type: object
+      properties:
+        session_id:
+          type: integer
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    inline_response_200_9:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              session_id:
+                type: integer
+              message:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+            example:
+              session_id: 0
+              message: message
+              timestamp: 2000-01-23T04:56:07.000+00:00
+      example:
+        logs:
+          - session_id: 0
+            message: message
+            timestamp: 2000-01-23T04:56:07.000+00:00
+          - session_id: 0
+            message: message
+            timestamp: 2000-01-23T04:56:07.000+00:00
+    inline_response_200_10:
+      type: object
+      properties:
+        lect_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        credits:
+          type: integer
+        professor:
+          type: string
+      example:
+        lect_id: 0
+        name: name
+        description: description
+        credits: 6
+        professor: professor
+    inline_response_200_11:
+      type: object
+      properties:
+        pre_requisites:
+          type: array
+          items:
+            type: object
+            properties:
+              lect_id:
+                type: integer
+              name:
+                type: string
+              type:
+                type: string
+                example: 필수
+            example:
+              lect_id: 0
+              name: name
+              type: 필수
+      example:
+        pre_requisites:
+          - lect_id: 0
+            name: name
+            type: 필수
+          - lect_id: 0
+            name: name
+            type: 필수
+    inline_response_200_12:
+      type: object
+      properties:
+        basic_knowledge:
+          type: array
+          items:
+            type: object
+            properties:
+              topic:
+                type: string
+              description:
+                type: string
+            example:
+              topic: topic
+              description: description
+      example:
+        basic_knowledge:
+          - topic: topic
+            description: description
+          - topic: topic
+            description: description
+    inline_response_200_13:
+      type: object
+      properties:
+        reviews:
+          type: array
+          items:
+            type: object
+            properties:
+              review_id:
+                type: integer
+              user:
+                type: string
+              rate:
+                type: integer
+              comment:
+                type: string
+              date:
+                type: string
+                format: date-time
+            example:
+              review_id: 0
+              user: user
+              rate: 6
+              comment: comment
+              date: 2000-01-23T04:56:07.000+00:00
+      example:
+        reviews:
+          - review_id: 0
+            user: user
+            rate: 6
+            comment: comment
+            date: 2000-01-23T04:56:07.000+00:00
+          - review_id: 0
+            user: user
+            rate: 6
+            comment: comment
+            date: 2000-01-23T04:56:07.000+00:00
+    inline_response_200_14:
+      type: object
+      properties:
+        roadmap:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: string
+              description:
+                type: string
+            example:
+              step: step
+              description: description
+      example:
+        roadmap:
+          - step: step
+            description: description
+          - step: step
+            description: description
+    inline_response_200_15:
+      type: object
+      properties:
+        lectures:
+          type: array
+          items:
+            type: object
+            properties:
+              lect_id:
+                type: integer
+              name:
+                type: string
+              professor:
+                type: string
+            example:
+              lect_id: 0
+              name: name
+              professor: professor
+      example:
+        lectures:
+          - lect_id: 0
+            name: name
+            professor: professor
+          - lect_id: 0
+            name: name
+            professor: professor
+    lectures_addtocurriculum_body:
+      type: object
+      properties:
+        curri_id:
+          type: integer
+        lect_id:
+          type: integer
