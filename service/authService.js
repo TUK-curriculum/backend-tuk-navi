@@ -24,15 +24,27 @@ async function signup(email, password, username, major, phone, studentId, grade)
   const gradeValue = Number(grade) || 1;  // 명시적으로 숫자 변환
   console.log(`🔍 [authService] Creating UserProfile with grade: ${gradeValue} (type: ${typeof gradeValue})`);
 
-  await UserProfile.create({
-    user_id: u.id,
-    name: username,
-    student_id: studentId || '',  // student_id 필드 추가
-    major: major,
-    phone: phone,
-    grade: gradeValue,  // 변환된 grade 값 사용
-    semester: 1
-  });
+  try {
+    await UserProfile.create({
+      user_id: u.id,
+      name: username,
+      student_id: studentId || '',  // student_id 필드 추가
+      major: major,
+      phone: phone,
+      grade: gradeValue,  // 변환된 grade 값 사용
+      semester: 1
+    });
+  } catch (err) {
+    // Sequelize validation / unique errors 처리
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      throw new Error('이미 사용 중인 학번입니다.');
+    }
+    if (err.name === 'SequelizeValidationError') {
+      throw new Error('회원 프로필 정보가 유효하지 않습니다.');
+    }
+    // 기타 오류 원상 복구
+    throw err;
+  }
 
   console.log(`✅ UserProfile created for user ${u.id} with student_id: ${studentId}, grade: ${gradeValue}`);
 
