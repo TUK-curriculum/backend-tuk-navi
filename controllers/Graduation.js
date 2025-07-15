@@ -113,39 +113,3 @@ router.get('/audit', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-
- */
-router.get('/requirements', authMiddleware, async (req, res) => {
-  try {
-    const missing = await graduationService.getRequiredMissing(req.user.userId);
-    res.status(200).json(missing);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-/**
- * [GET] /graduation/progress
- */
-router.get('/progress', authMiddleware, async (req, res) => {
-  try {
-    const pass = await graduationService.getGraduationPass(req.user.userId);
-    res.status(200).json(pass);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-/**
- * [GET] /graduation/audit
- */
-router.get('/audit', authMiddleware, async (req, res) => {
-  try {
-    const overview = await graduationService.getStatusOverview(req.user.userId);
-    res.status(200).json(overview);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-module.exports = router;

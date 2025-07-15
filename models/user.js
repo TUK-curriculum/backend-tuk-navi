@@ -53,11 +53,3 @@ module.exports = (sequelize, DataTypes) => {
 
   return User;
 };
-
-User.hasMany(models.Records, { foreignKey: 'userId', onDelete: 'CASCADE' });
-User.hasMany(models.Certificate, { foreignKey: 'userId', onDelete: 'CASCADE' });
-User.hasMany(models.Curriculum, { foreignKey: 'userId', onDelete: 'CASCADE' });
-  };
-
-return User;
-};

@@ -87,15 +87,3 @@ sequelize.sync().then(() => {
 }).catch((error) => {
   console.error('Unable to connect to the database:', error);
 });
-
-const { sequelize, RequiredCourse } = db;
-RequiredCourse.sync();
-
-sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server is running on port ${PORT}`);
-    console.log(`📄 Swagger Docs available at: http://localhost:${PORT}/api-docs`);
-  });
-}).catch((error) => {
-  console.error('Unable to connect to the database:', error);
-});

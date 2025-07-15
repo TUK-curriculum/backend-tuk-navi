@@ -120,25 +120,3 @@ router.post('/complete-onboarding', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-
- * 온보딩 완료 처리
-  */
-router.post('/complete-onboarding', authMiddleware, async (req, res) => {
-  try {
-    const result = await profileService.completeOnboarding(req.user.userId);
-
-    res.status(200).json({
-      success: true,
-      message: result.message
-    });
-  } catch (error) {
-    console.error('🚨 [POST /profile/complete-onboarding] 온보딩 완료 에러:', error.message);
-    res.status(500).json({
-      success: false,
-      message: '서버 오류로 온보딩 완료 처리에 실패했습니다.',
-      error: error.message
-    });
-  }
-});
-
-module.exports = router;
