@@ -19,10 +19,10 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'CASCADE'
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'users', // ✅ 반드시 'users' 테이블 참조
+        model: 'users',
         key: 'id'
       },
       onDelete: 'CASCADE'
