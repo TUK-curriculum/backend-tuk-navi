@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Curriculum = sequelize.define('Curriculum', {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },

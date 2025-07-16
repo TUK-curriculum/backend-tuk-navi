@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const ACCESS_TOKEN_EXPIRATION = '1h';
 const REFRESH_TOKEN_EXPIRATION = '7d';
 
-async function signup(email, password, username, major, phone, studentId, grade) {
+async function signup(email, password, username, major, phone, studentId, grade, interests) {
   console.log(`🔍 [authService] signup called with params:`, { email, username, major, phone, studentId, grade, gradeType: typeof grade });
 
   if (await User.findOne({ where: { email } })) {
@@ -32,13 +32,11 @@ async function signup(email, password, username, major, phone, studentId, grade)
       major: major,
       phone: phone,
       grade: gradeValue,  // 변환된 grade 값 사용
-      semester: 1
+      semester: 1,
+      interests: interests ? JSON.stringify(interests) : null  // interests를 JSON 문자열로 저장
     });
   } catch (err) {
-    // Sequelize validation / unique errors 처리
-    if (err.name === 'SequelizeUniqueConstraintError') {
-      throw new Error('이미 사용 중인 학번입니다.');
-    }
+    // Sequelize validation errors 처리
     if (err.name === 'SequelizeValidationError') {
       throw new Error('회원 프로필 정보가 유효하지 않습니다.');
     }
@@ -112,7 +110,14 @@ async function login(email, password) {
   if (!user.password_hash) throw new Error('소셜 계정은 비밀번호 로그인 불가');
   if (!await bcrypt.compare(password, user.password_hash)) throw new Error('비밀번호가 일치하지 않습니다.');
   const tokens = generateTokens(user.id);
-  await RefreshToken.create({ token: tokens.refreshToken, userId: user.id });
+
+  // 추가: user.id, tokens.refreshToken 값 로그
+  console.log('[LOGIN] user.id:', user.id);
+  console.log('[LOGIN] tokens.refreshToken:', tokens.refreshToken);
+  if (!user.id) throw new Error('로그인 오류: user.id가 없습니다. 관리자에게 문의하세요.');
+  if (!tokens.refreshToken) throw new Error('로그인 오류: refreshToken 생성 실패. 관리자에게 문의하세요.');
+
+  await RefreshToken.upsert({ token: tokens.refreshToken, userId: user.id });
 
   // 사용자 정보와 토큰을 함께 반환 (UserProfile 정보 포함)
   return {

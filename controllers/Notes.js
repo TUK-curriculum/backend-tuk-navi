@@ -7,9 +7,9 @@ const NoteService = require('../service/NoteService');
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const notes = await NoteService.list(req.user.userId);
-        res.json(notes);
+        res.json({ success: true, data: notes });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -17,9 +17,9 @@ router.get('/', authMiddleware, async (req, res) => {
 router.post('/', authMiddleware, async (req, res) => {
     try {
         const note = await NoteService.create(req.user.userId, req.body);
-        res.status(201).json(note);
+        res.status(201).json({ success: true, data: note });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -27,9 +27,9 @@ router.post('/', authMiddleware, async (req, res) => {
 router.patch('/:id', authMiddleware, async (req, res) => {
     try {
         const note = await NoteService.update(req.user.userId, req.params.id, req.body);
-        res.json(note);
+        res.json({ success: true, data: note });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -37,9 +37,9 @@ router.patch('/:id', authMiddleware, async (req, res) => {
 router.delete('/:id', authMiddleware, async (req, res) => {
     try {
         await NoteService.remove(req.user.userId, req.params.id);
-        res.status(204).send();
+        res.status(204).json({ success: true });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 

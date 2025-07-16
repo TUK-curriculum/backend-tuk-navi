@@ -39,6 +39,7 @@ module.exports = {
         semester: user.UserProfile?.semester || 1,
         phone: user.UserProfile?.phone || user.phone || '',
         onboardingCompleted: user.UserProfile?.onboarding_completed || false,
+        interests: user.UserProfile?.interests ? JSON.parse(user.UserProfile.interests) : [],
         provider: user.provider,
         createdAt: user.createdAt
       };

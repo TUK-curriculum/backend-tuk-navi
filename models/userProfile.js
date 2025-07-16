@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         student_id: {
             type: DataTypes.STRING,
-            unique: true,
             allowNull: true
         },
         major: {
@@ -38,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
         onboarding_completed: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
+        },
+        interests: {
+            type: DataTypes.TEXT,
+            allowNull: true
         },
         updated_at: {
             type: DataTypes.DATE,

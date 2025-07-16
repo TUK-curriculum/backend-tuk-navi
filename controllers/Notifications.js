@@ -7,9 +7,9 @@ const NotificationService = require('../service/NotificationService');
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const list = await NotificationService.list(req.user.userId);
-        res.json(list);
+        res.json({ success: true, data: list });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -18,9 +18,9 @@ router.put('/read', authMiddleware, async (req, res) => {
     try {
         const { ids = [] } = req.body;
         await NotificationService.markRead(req.user.userId, ids);
-        res.status(200).send();
+        res.status(200).json({ success: true });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -28,9 +28,9 @@ router.put('/read', authMiddleware, async (req, res) => {
 router.put('/:id/read', authMiddleware, async (req, res) => {
     try {
         await NotificationService.markRead(req.user.userId, [req.params.id]);
-        res.status(200).send();
+        res.status(200).json({ success: true });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 

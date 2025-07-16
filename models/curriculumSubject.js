@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const CurriculumSubject = sequelize.define('CurriculumSubject', {
         curriculumUserId: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
             field: 'curriculum_user_id'

@@ -12,9 +12,9 @@ const passport = require('passport');
 router.post('/signup', async (req, res) => {
   try {
     console.log('📥 Signup request body:', JSON.stringify(req.body, null, 2));
-    const { email, password, username, major, phone, studentId, grade } = req.body;
-    console.log('📋 Extracted fields:', { email, password: password ? '[HIDDEN]' : undefined, username, major, phone, studentId, grade });
-    const user = await authService.signup(email, password, username, major, phone, studentId, grade);
+    const { email, password, username, major, phone, studentId, grade, interests } = req.body;
+    console.log('📋 Extracted fields:', { email, password: password ? '[HIDDEN]' : undefined, username, major, phone, studentId, grade, interests });
+    const user = await authService.signup(email, password, username, major, phone, studentId, grade, interests);
     console.log('✅ Signup successful for user:', { userId: user.userId, email: user.email, studentId: user.studentId, grade: user.grade });
     res.status(201).json({ message: '회원가입 완료', user });
   } catch (error) {
