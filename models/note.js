@@ -26,6 +26,15 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
             field: 'is_pinned'
+        },
+        isArchived: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            field: 'is_archived'
+        },
+        order: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         }
     }, {
         tableName: 'notes',
