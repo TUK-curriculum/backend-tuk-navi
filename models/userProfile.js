@@ -42,6 +42,26 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true
         },
+        completed_credits: {
+            type: DataTypes.SMALLINT,
+            defaultValue: 0
+        },
+        career: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        industry: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        remaining_semesters: {
+            type: DataTypes.SMALLINT,
+            defaultValue: 0
+        },
+        max_credits_per_term: {
+            type: DataTypes.SMALLINT,
+            defaultValue: 18
+        },
         updated_at: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW

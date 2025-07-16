@@ -20,7 +20,7 @@ module.exports = {
         include: [{
           model: UserProfile,
           required: false,
-          attributes: ['name', 'student_id', 'major', 'grade', 'semester', 'phone', 'onboarding_completed']
+          attributes: ['name', 'student_id', 'major', 'grade', 'semester', 'phone', 'onboarding_completed', 'interests', 'completed_credits', 'career', 'industry', 'remaining_semesters', 'max_credits_per_term']
         }]
       });
 
@@ -40,6 +40,11 @@ module.exports = {
         phone: user.UserProfile?.phone || user.phone || '',
         onboardingCompleted: user.UserProfile?.onboarding_completed || false,
         interests: user.UserProfile?.interests ? JSON.parse(user.UserProfile.interests) : [],
+        completedCredits: user.UserProfile?.completed_credits || 0,
+        career: user.UserProfile?.career || '',
+        industry: user.UserProfile?.industry || '',
+        remainingSemesters: user.UserProfile?.remaining_semesters || 0,
+        maxCreditsPerTerm: user.UserProfile?.max_credits_per_term || 18,
         provider: user.provider,
         createdAt: user.createdAt
       };
@@ -80,22 +85,58 @@ module.exports = {
   /**
    * 온보딩 완료 상태 업데이트
    * @param {number} userId - 사용자 ID
+   * @param {Object} onboardingData - 온보딩 데이터
    * @returns {Promise<Object>} 업데이트 결과
    */
-  async completeOnboarding(userId) {
+  async completeOnboarding(userId, onboardingData = {}) {
     try {
       const { UserProfile } = require('../models');
 
-      const userProfile = await UserProfile.findOne({
+      let userProfile = await UserProfile.findOne({
         where: { user_id: userId }
       });
 
       if (!userProfile) {
-        throw new Error('사용자 프로필을 찾을 수 없습니다.');
+        // 프로필이 없으면 새로 생성
+        userProfile = await UserProfile.create({
+          user_id: userId,
+          name: onboardingData.name || '',
+          student_id: onboardingData.studentId || '',
+          major: onboardingData.department || '',
+          grade: parseInt(onboardingData.year) || 1,
+          semester: 1,
+          phone: '',
+          onboarding_completed: true,
+          interests: onboardingData.interests ? JSON.stringify(onboardingData.interests) : '[]',
+          completed_credits: parseInt(onboardingData.completedCredits) || 0,
+          career: onboardingData.career || '',
+          industry: onboardingData.industry || '',
+          remaining_semesters: parseInt(onboardingData.remainingSemesters) || 0,
+          max_credits_per_term: parseInt(onboardingData.maxCreditsPerTerm) || 18
+        });
+      } else {
+        // 기존 프로필 업데이트
+        await userProfile.update({
+          name: onboardingData.name || userProfile.name,
+          student_id: onboardingData.studentId || userProfile.student_id,
+          major: onboardingData.department || userProfile.major,
+          grade: parseInt(onboardingData.year) || userProfile.grade,
+          onboarding_completed: true,
+          interests: onboardingData.interests ? JSON.stringify(onboardingData.interests) : userProfile.interests,
+          completed_credits: parseInt(onboardingData.completedCredits) || userProfile.completed_credits || 0,
+          career: onboardingData.career || userProfile.career,
+          industry: onboardingData.industry || userProfile.industry,
+          remaining_semesters: parseInt(onboardingData.remainingSemesters) || userProfile.remaining_semesters || 0,
+          max_credits_per_term: parseInt(onboardingData.maxCreditsPerTerm) || userProfile.max_credits_per_term || 18
+        });
       }
 
-      await userProfile.update({ onboarding_completed: true });
-      console.log(`✅ User ${userId} onboarding completed`);
+      console.log(`✅ User ${userId} onboarding completed with data:`, {
+        name: onboardingData.name,
+        grade: onboardingData.year,
+        completedCredits: onboardingData.completedCredits,
+        interests: onboardingData.interests
+      });
 
       return { message: '온보딩이 완료되었습니다.' };
     } catch (error) {

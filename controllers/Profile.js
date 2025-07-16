@@ -103,7 +103,8 @@ router.get('/summary', authMiddleware, async (req, res) => {
  */
 router.post('/complete-onboarding', authMiddleware, async (req, res) => {
   try {
-    const result = await profileService.completeOnboarding(req.user.userId);
+    const onboardingData = req.body;
+    const result = await profileService.completeOnboarding(req.user.userId, onboardingData);
 
     res.status(200).json({
       success: true,
