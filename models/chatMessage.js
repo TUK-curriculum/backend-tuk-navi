@@ -1,14 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
     const ChatMessage = sequelize.define('ChatMessage', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         userId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
-            field: 'user_id'
         },
         sender: {
             type: DataTypes.ENUM('user', 'assistant'),
@@ -34,10 +33,6 @@ module.exports = (sequelize, DataTypes) => {
         underscored: true,
         timestamps: false
     });
-
-    ChatMessage.associate = models => {
-        ChatMessage.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-    };
 
     return ChatMessage;
 }; 

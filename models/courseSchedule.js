@@ -1,9 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const CourseSchedule = sequelize.define('CourseSchedule', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         courseId: {
             type: DataTypes.STRING(20),
@@ -36,10 +36,6 @@ module.exports = (sequelize, DataTypes) => {
         underscored: true,
         timestamps: false
     });
-
-    CourseSchedule.associate = models => {
-        CourseSchedule.belongsTo(models.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
-    };
 
     return CourseSchedule;
 }; 

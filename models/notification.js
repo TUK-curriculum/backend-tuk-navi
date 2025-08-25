@@ -1,14 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
     const Notification = sequelize.define('Notification', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         userId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
-            field: 'user_id'
         },
         title: {
             type: DataTypes.STRING(120)
@@ -38,10 +37,6 @@ module.exports = (sequelize, DataTypes) => {
         underscored: true,
         timestamps: false
     });
-
-    Notification.associate = models => {
-        Notification.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-    };
 
     return Notification;
 }; 

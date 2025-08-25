@@ -1,14 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
     const Schedule = sequelize.define('Schedule', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         userId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
-            field: 'user_id'
         },
         semesterCode: {
             type: DataTypes.STRING(10),
@@ -28,12 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'schedules',
         underscored: true
     });
-
-    Schedule.associate = models => {
-        Schedule.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-        Schedule.hasMany(models.TimetableSlot, { foreignKey: 'scheduleId', as: 'TimetableSlots', onDelete: 'CASCADE' });
-        Schedule.hasMany(models.CustomEvent, { foreignKey: 'scheduleId', as: 'CustomEvents', onDelete: 'CASCADE' });
-    };
 
     return Schedule;
 }; 

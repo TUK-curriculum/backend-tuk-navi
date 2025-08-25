@@ -1,14 +1,10 @@
 // models/userProfile.js
 module.exports = (sequelize, DataTypes) => {
     const UserProfile = sequelize.define('UserProfile', {
-        user_id: {
-            type: DataTypes.UUID,
+        userId: {
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            allowNull: false,
-            references: {
-                model: 'users',
-                key: 'id'
-            }
+            allowNull: false
         },
         name: {
             type: DataTypes.STRING,

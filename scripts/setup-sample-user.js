@@ -36,7 +36,7 @@ async function setupSampleUser() {
 
             // UserProfile 생성
             await db.UserProfile.create({
-                user_id: sampleUser.id,
+                userId: sampleUser.id,
                 name: '김한국',
                 student_id: '2022150000',
                 major: '컴퓨터공학부',
@@ -73,7 +73,7 @@ async function setupSampleUser() {
 
         // GraduationInfo 초기화
         await db.GraduationInfo.upsert({
-            user_id: sampleUser.id,
+            userId: sampleUser.id,
             total_credits: totalCredits,
             major_required: 0,
             major_elective: 0,

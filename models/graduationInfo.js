@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const GraduationInfo = sequelize.define('GraduationInfo', {
-        user_id: {
-            type: DataTypes.UUID,
+        userId: {
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             allowNull: false,
             references: {

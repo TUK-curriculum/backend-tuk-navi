@@ -93,13 +93,13 @@ module.exports = {
       const { UserProfile } = require('../models');
 
       let userProfile = await UserProfile.findOne({
-        where: { user_id: userId }
+        where: { userId: userId }
       });
 
       if (!userProfile) {
         // 프로필이 없으면 새로 생성
         userProfile = await UserProfile.create({
-          user_id: userId,
+          userId: userId,
           name: onboardingData.name || '',
           student_id: onboardingData.studentId || '',
           major: onboardingData.department || '',

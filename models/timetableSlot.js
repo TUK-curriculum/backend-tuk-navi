@@ -1,12 +1,12 @@
 module.exports = (sequelize, DataTypes) => {
     const TimetableSlot = sequelize.define('TimetableSlot', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         scheduleId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
             field: 'schedule_id'
         },
@@ -50,10 +50,5 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    TimetableSlot.associate = models => {
-        TimetableSlot.belongsTo(models.Schedule, { foreignKey: 'scheduleId', onDelete: 'CASCADE' });
-        TimetableSlot.belongsTo(models.Course, { foreignKey: 'courseId', onDelete: 'SET NULL' });
-    };
-
     return TimetableSlot;
-}; 
+};  onDelete: 'SET NULL'

@@ -12,10 +12,10 @@ router.post('/chatting-logs', authMiddleware, (req, res, next) => {
 });
 
 /**
- * [GET] /chatbot/chatting-logs/:user_id
+ * [GET] /chatbot/chatting-logs/:userId
  */
-router.get('/chatting-logs/:user_id', authMiddleware, (req, res, next) => {
-  ChatbotHandlers.chatChatting_logsUser_idGET(req, res, next, req.headers.authorization, req.params.user_id);
+router.get('/chatting-logs/:userId', authMiddleware, (req, res, next) => {
+  ChatbotHandlers.chatChatting_logsuserIdGET(req, res, next, req.headers.authorization, req.params.userId);
 });
 
 /**
@@ -33,10 +33,10 @@ router.post('/user-info', authMiddleware, (req, res, next) => {
 });
 
 /**
- * [GET] /chatbot/user-info/:user_id
+ * [GET] /chatbot/user-info/:userId
  */
-router.get('/user-info/:user_id', authMiddleware, (req, res, next) => {
-  ChatbotHandlers.chatUser_infoUser_idGET(req, res, next, req.headers.authorization, req.params.user_id);
+router.get('/user-info/:userId', authMiddleware, (req, res, next) => {
+  ChatbotHandlers.chatUser_infoUserIdGET(req, res, next, req.headers.authorization, req.params.userId);
 });
 
 /**
