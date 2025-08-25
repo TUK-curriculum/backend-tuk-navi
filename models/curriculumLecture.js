@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         model: 'curriculums',
         key: 'id',
       },
+      field: 'curri_id'
     },
     lect_id: {
       type: DataTypes.INTEGER.UNSIGNED,
