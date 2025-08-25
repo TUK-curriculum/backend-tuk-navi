@@ -9,7 +9,7 @@ module.exports = {
             defaultValue: false,
         });
         await queryInterface.addColumn('notes', 'order', {
-            type: Sequelize.INTEGER,
+            type: Sequelize.INTEGER.UNSIGNED,
             allowNull: true,
         });
     },

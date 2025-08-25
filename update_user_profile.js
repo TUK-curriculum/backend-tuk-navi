@@ -17,7 +17,7 @@ async function updateExistingUsers() {
             if (!user.UserProfile) {
                 // UserProfile이 없는 경우 생성
                 await UserProfile.create({
-                    user_id: user.id,
+                    userId: user.id,
                     name: user.username || '사용자',
                     student_id: '2021123456', // 기본값
                     major: user.major || '컴퓨터공학과',

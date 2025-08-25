@@ -2,12 +2,12 @@
 module.exports = (sequelize, DataTypes) => {
   const Certificate = sequelize.define('Certificate', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true
     },
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false
     },
     language: {
@@ -25,10 +25,6 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'certificates'
   });
-
-  Certificate.associate = models => {
-    Certificate.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-  };
 
   return Certificate;
 };

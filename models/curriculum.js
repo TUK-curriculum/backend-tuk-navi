@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Curriculum = sequelize.define('Curriculum', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true
     },
@@ -15,17 +15,12 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false
     },
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false
     }
   }, {
     tableName: 'curriculums'
   });
-
-  Curriculum.associate = models => {
-    Curriculum.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-    Curriculum.hasMany(models.Lecture, { foreignKey: 'curri_id', as: 'lectures', onDelete: 'CASCADE' });
-  };
 
   return Curriculum;
 };

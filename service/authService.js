@@ -26,7 +26,7 @@ async function signup(email, password, username, major, phone, studentId, grade,
 
   try {
     await UserProfile.create({
-      user_id: u.id,
+      userId: u.id,
       name: username,
       student_id: studentId || '',  // student_id 필드 추가
       major: major,

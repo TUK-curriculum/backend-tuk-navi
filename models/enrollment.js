@@ -1,10 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const Enrollment = sequelize.define('Enrollment', {
         userId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             allowNull: false,
-            field: 'user_id'
         },
         courseId: {
             type: DataTypes.STRING(20),
@@ -32,11 +31,6 @@ module.exports = (sequelize, DataTypes) => {
         underscored: true,
         timestamps: false
     });
-
-    Enrollment.associate = models => {
-        Enrollment.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-        Enrollment.belongsTo(models.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
-    };
 
     return Enrollment;
 };

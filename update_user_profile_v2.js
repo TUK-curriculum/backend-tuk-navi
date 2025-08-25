@@ -19,7 +19,7 @@ async function updateExistingUsers() {
                 // UserProfile이 없는 경우 생성 (고유한 student_id 사용)
                 const studentId = `202112345${i.toString().padStart(2, '0')}`;
                 await UserProfile.create({
-                    user_id: user.id,
+                    userId: user.id,
                     name: user.username || '사용자',
                     student_id: studentId,
                     major: user.major || '컴퓨터공학과',

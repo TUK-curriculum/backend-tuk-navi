@@ -1,12 +1,12 @@
 module.exports = (sequelize, DataTypes) => {
     const CustomEvent = sequelize.define('CustomEvent', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         scheduleId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
             field: 'schedule_id'
         },
@@ -41,10 +41,6 @@ module.exports = (sequelize, DataTypes) => {
         underscored: true,
         timestamps: false
     });
-
-    CustomEvent.associate = models => {
-        CustomEvent.belongsTo(models.Schedule, { foreignKey: 'scheduleId', onDelete: 'CASCADE' });
-    };
 
     return CustomEvent;
 }; 

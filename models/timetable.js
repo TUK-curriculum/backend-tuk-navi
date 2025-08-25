@@ -2,12 +2,12 @@
 module.exports = (sequelize, DataTypes) => {
   const Timetable = sequelize.define('Timetable', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true
     },
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false
     },
     semester: {
@@ -33,10 +33,6 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'timetables'
   });
-
-  Timetable.associate = models => {
-    Timetable.belongsTo(models.User, { foreignKey: 'userId' });
-  };
 
   return Timetable;
 };

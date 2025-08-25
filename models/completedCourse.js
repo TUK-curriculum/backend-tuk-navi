@@ -1,10 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const CompletedCourse = sequelize.define('CompletedCourse', {
         userId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             allowNull: false,
-            field: 'user_id'
         },
         courseId: {
             type: DataTypes.STRING(20),
@@ -24,11 +23,6 @@ module.exports = (sequelize, DataTypes) => {
         underscored: true,
         timestamps: false
     });
-
-    CompletedCourse.associate = models => {
-        CompletedCourse.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-        CompletedCourse.belongsTo(models.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
-    };
-
+    
     return CompletedCourse;
 }; 
