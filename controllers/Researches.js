@@ -7,7 +7,7 @@ const researchesService = require('../service/ResearchesService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
- * ✅ [GET] /researches
+ * [GET] /researches
  * 연구 업적 전체 조회
  */
 router.get('/', authMiddleware, async (req, res) => {
@@ -20,7 +20,7 @@ router.get('/', authMiddleware, async (req, res) => {
       data: researches
     });
   } catch (error) {
-    console.error('🚨 [GET /researches] 연구 업적 조회 에러:', error.message);
+    console.error('[GET /researches] 연구 업적 조회 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 연구 업적을 조회할 수 없습니다.',
@@ -30,7 +30,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [POST] /researches
+ * [POST] /researches
  * 연구 업적 추가
  */
 router.post('/', authMiddleware, async (req, res) => {
@@ -53,7 +53,7 @@ router.post('/', authMiddleware, async (req, res) => {
       data: newResearch
     });
   } catch (error) {
-    console.error('🚨 [POST /researches] 연구 업적 등록 에러:', error.message);
+    console.error('[POST /researches] 연구 업적 등록 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 연구 업적을 등록할 수 없습니다.',
@@ -63,7 +63,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [PUT] /researches/:researchId
+ * [PUT] /researches/:researchId
  * 연구 업적 수정
  */
 router.put('/:researchId', authMiddleware, async (req, res) => {
@@ -86,7 +86,7 @@ router.put('/:researchId', authMiddleware, async (req, res) => {
       data: updated.research
     });
   } catch (error) {
-    console.error('🚨 [PUT /researches/:researchId] 연구 업적 수정 에러:', error.message);
+    console.error('[PUT /researches/:researchId] 연구 업적 수정 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 연구 업적을 수정할 수 없습니다.',
@@ -96,7 +96,7 @@ router.put('/:researchId', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [DELETE] /researches/:researchId
+ * [DELETE] /researches/:researchId
  * 연구 업적 삭제
  */
 router.delete('/:researchId', authMiddleware, async (req, res) => {
@@ -118,7 +118,7 @@ router.delete('/:researchId', authMiddleware, async (req, res) => {
       message: result.message
     });
   } catch (error) {
-    console.error('🚨 [DELETE /researches/:researchId] 연구 업적 삭제 에러:', error.message);
+    console.error('[DELETE /researches/:researchId] 연구 업적 삭제 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 연구 업적을 삭제할 수 없습니다.',

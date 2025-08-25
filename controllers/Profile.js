@@ -7,7 +7,7 @@ const profileService = require('../service/ProfileService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
- * ✅ [GET] /profile
+ * [GET] /profile
  * 내 프로필 기본 정보 조회
  */
 router.get('/', authMiddleware, async (req, res) => {
@@ -28,7 +28,7 @@ router.get('/', authMiddleware, async (req, res) => {
       data: profile
     });
   } catch (error) {
-    console.error('🚨 [GET /profile] 프로필 조회 에러:', error.message);
+    console.error('[GET /profile] 프로필 조회 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 프로필을 조회할 수 없습니다.',
@@ -38,7 +38,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [PUT] /profile
+ * [PUT] /profile
  * 내 프로필 수정 (부분 수정 가능)
  */
 router.put('/', authMiddleware, async (req, res) => {
@@ -65,7 +65,7 @@ router.put('/', authMiddleware, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('🚨 [PUT /profile] 프로필 수정 에러:', error.message);
+    console.error('[PUT /profile] 프로필 수정 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 프로필을 수정할 수 없습니다.',
@@ -75,7 +75,7 @@ router.put('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [GET] /profile/summary
+ * [GET] /profile/summary
  * 내 총 이수 학점 및 평균 평점 조회
  */
 router.get('/summary', authMiddleware, async (req, res) => {
@@ -88,7 +88,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
       data: summary
     });
   } catch (error) {
-    console.error('🚨 [GET /profile/summary] 학점 요약 조회 에러:', error.message);
+    console.error('[GET /profile/summary] 학점 요약 조회 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 학점 요약을 조회할 수 없습니다.',
@@ -98,7 +98,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [POST] /profile/complete-onboarding
+ * [POST] /profile/complete-onboarding
  * 온보딩 완료 처리
  */
 router.post('/complete-onboarding', authMiddleware, async (req, res) => {
@@ -111,7 +111,7 @@ router.post('/complete-onboarding', authMiddleware, async (req, res) => {
       message: result.message
     });
   } catch (error) {
-    console.error('🚨 [POST /profile/complete-onboarding] 온보딩 완료 에러:', error.message);
+    console.error('[POST /profile/complete-onboarding] 온보딩 완료 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 온보딩 완료 처리에 실패했습니다.',

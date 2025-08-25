@@ -7,7 +7,7 @@ dotenv.config();
 
 const authService = require('./authService');
 
-console.log('📡 GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL);
+console.log('GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL);
 
 passport.use(new GoogleStrategy(
   {
@@ -18,8 +18,8 @@ passport.use(new GoogleStrategy(
   },
   async (req, accessToken, refreshToken, profile, done) => {
     try {
-      console.log('🔑 accessToken:', accessToken);
-      console.log('👤 profile:', profile);
+      console.log('accessToken:', accessToken);
+      console.log('profile:', profile);
 
       const email = profile.emails?.[0]?.value;
       const username = profile.displayName || email?.split('@')[0];
@@ -29,7 +29,7 @@ passport.use(new GoogleStrategy(
       const user = await authService.findOrCreateUser(email, username, 'google');
       return done(null, user);
     } catch (err) {
-      console.error('🔴 GoogleStrategy Error:', err.message);
+      console.error('GoogleStrategy Error:', err.message);
       return done(err, null);
     }
   }

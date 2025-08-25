@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 
 async function setupSampleUser() {
     try {
-        console.log('🚀 [Setup] Starting sample user setup...');
+        console.log('[Setup] Starting sample user setup...');
 
         // 기존 샘플 사용자 확인
         const existingUser = await db.User.findOne({
@@ -18,11 +18,11 @@ async function setupSampleUser() {
         let sampleUser;
 
         if (existingUser) {
-            console.log('👤 [Setup] Sample user already exists, updating...');
+            console.log('[Setup] Sample user already exists, updating...');
             sampleUser = existingUser;
         } else {
             // 샘플 사용자 생성
-            console.log('👤 [Setup] Creating sample user...');
+            console.log('[Setup] Creating sample user...');
             const hashedPassword = await bcrypt.hash('sample123!', 12);
 
             sampleUser = await db.User.create({
@@ -47,12 +47,12 @@ async function setupSampleUser() {
                 updated_at: new Date()
             });
 
-            console.log('✅ [Setup] Sample user created:', sampleUser.id);
+            console.log('[Setup] Sample user created:', sampleUser.id);
         }
 
         // 기존 Records 삭제 (재설정)
         await db.Records.destroy({ where: { userId: sampleUser.id } });
-        console.log('🗑️ [Setup] Cleared existing records');
+        console.log('[Setup] Cleared existing records');
 
         // 샘플 성적 데이터 추가
         const sampleRecords = createSampleRecordsForUser(sampleUser.id);
@@ -60,7 +60,7 @@ async function setupSampleUser() {
 
         if (completedRecords.length > 0) {
             await db.Records.bulkCreate(completedRecords);
-            console.log('📚 [Setup] Added', completedRecords.length, 'sample records');
+            console.log('[Setup] Added', completedRecords.length, 'sample records');
         }
 
         // UserCredits 업데이트
@@ -146,19 +146,19 @@ async function setupSampleUser() {
             }
         ]);
 
-        console.log('✅ [Setup] Sample user setup completed successfully!');
-        console.log('📧 [Setup] Login credentials:');
+        console.log('[Setup] Sample user setup completed successfully!');
+        ('[Setup] Login credentials:');
         console.log('   Email: sample@tukorea.ac.kr');
         console.log('   Password: sample123!');
-        console.log('👤 [Setup] User Info:');
+        console.log('[Setup] User Info:');
         console.log('   Name: 김한국');
         console.log('   Student ID: 2022150000');
         console.log('   Grade: 4학년');
         console.log('   Major: 컴퓨터공학부');
-        console.log(`📊 [Setup] Academic Records: ${completedRecords.length} courses, ${totalCredits} credits`);
+        console.log(`[Setup] Academic Records: ${completedRecords.length} courses, ${totalCredits} credits`);
 
     } catch (error) {
-        console.error('❌ [Setup] Sample user setup failed:', error);
+        console.error('[Setup] Sample user setup failed:', error);
         throw error;
     }
 }
@@ -167,11 +167,11 @@ async function setupSampleUser() {
 if (require.main === module) {
     setupSampleUser()
         .then(() => {
-            console.log('🎉 [Setup] All done! You can now test with the sample user.');
+            console.log('[Setup] All done! You can now test with the sample user.');
             process.exit(0);
         })
         .catch(error => {
-            console.error('💥 [Setup] Setup failed:', error.message);
+            console.error('[Setup] Setup failed:', error.message);
             process.exit(1);
         });
 }
