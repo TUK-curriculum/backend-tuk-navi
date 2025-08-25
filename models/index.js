@@ -48,7 +48,6 @@ db.User.hasMany(db.Records, { foreignKey: 'userId', onDelete: 'CASCADE' });
 db.User.hasMany(db.Certificate, { foreignKey: 'userId', onDelete: 'CASCADE' });
 db.User.hasMany(db.Curriculum, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
-db.Curriculum.hasMany(db.Lecture, { foreignKey: 'curri_id', as: 'lectures', onDelete: 'CASCADE' });
 db.Curriculum.belongsTo(db.User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
 db.Lecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
 db.Lecture.belongsTo(db.LectureCode, { foreignKey: 'code_id', onDelete: 'CASCADE' });
@@ -106,11 +105,11 @@ db.CustomEvent.belongsTo(db.Schedule, { foreignKey: 'scheduleId', as: 'schedule'
 
 db.TimetableSlot.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'SET NULL' });
 
-db.Curriculum.hasMany(db.CurriculumLecture, { foreignKey: 'curri_id', onDelete: 'CASCADE' });
-db.CurriculumLecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id' });
+db.Curriculum.hasMany(db.CurriculumLecture, { foreignKey: 'curri_id', as: 'lectures', onDelete: 'CASCADE' });
+db.CurriculumLecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
 
-db.LectureCode.hasMany(db.CurriculumLecture, { foreignKey: 'lect_id', onDelete: 'CASCADE' });
-db.CurriculumLecture.belongsTo(db.LectureCode, { foreignKey: 'lect_id' });
+db.LectureCode.hasMany(db.CurriculumLecture, { foreignKey: 'lect_id', as: 'curriculumLectures', onDelete: 'CASCADE' });
+db.CurriculumLecture.belongsTo(db.LectureCode, { foreignKey: 'lect_id', as: 'lectureCode' });
 
 db.Opinion.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
 db.Opinion.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });

@@ -1,6 +1,6 @@
 'use strict';
 
-const { Curriculum, Lecture, sequelize } = require('../models');
+const { Curriculum, CurriculumLecture, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 module.exports = {
@@ -10,8 +10,8 @@ module.exports = {
   async getCurriculums(userId) {
     return await Curriculum.findAll({
       where: { userId },
-      include: [{ model: Lecture, as: 'lectures' }],
-      order: [[{ model: Lecture, as: 'lectures' }, 'semester', 'ASC']],
+      include: [{ model: CurriculumLecture, as: 'lectures' }],
+      order: [[{ model: CurriculumLecture, as: 'lectures' }, 'semester', 'ASC']],
     });
   },
 
@@ -25,7 +25,7 @@ module.exports = {
     }
     const curriculum = await Curriculum.findOne({
       where: { id, userId },
-      include: [{ model: Lecture, as: 'lectures', order: [['semester', 'ASC']] }],
+      include: [{ model: CurriculumLecture, as: 'lectures', order: [['semester', 'ASC']] }],
     });
     if (!curriculum) {
       throw new Error('해당 커리큘럼을 찾을 수 없습니다.');
@@ -44,7 +44,7 @@ module.exports = {
       const curriculum = await Curriculum.findOne({ where: { id, userId }, transaction: t });
       if (!curriculum) throw new Error('해당 커리큘럼을 찾을 수 없습니다.');
 
-      await Lecture.destroy({ where: { curri_id: id }, transaction: t });
+      await CurriculumLecture.destroy({ where: { curri_id: id }, transaction: t });
       await curriculum.destroy({ transaction: t });
       return { message: '커리큘럼이 삭제되었습니다.' };
     });
@@ -79,7 +79,7 @@ module.exports = {
   async getDefaultCurriculum(userId) {
     let curriculum = await Curriculum.findOne({
       where: { isDefault: true, userId },
-      include: [{ model: Lecture, as: 'lectures', order: [['semester', 'ASC']] }],
+      include: [{ model: CurriculumLecture, as: 'lectures', order: [['semester', 'ASC']] }],
     });
     if (!curriculum) {
       curriculum = await sequelize.transaction(async (t) =>
@@ -104,7 +104,7 @@ module.exports = {
       throw new Error('courseName, dayOfWeek, startTime, endTime, semester 모두 필요합니다.');
     }
 
-    const conflictLecture = await Lecture.findOne({
+    const conflictLecture = await CurriculumLecture.findOne({
       where: {
         curri_id: id,
         dayOfWeek,
@@ -125,7 +125,7 @@ module.exports = {
       throw new Error('이미 같은 시간대에 다른 강의가 존재합니다.');
     }
 
-    const lecture = await Lecture.create({
+    const curriculum_lecture = await CurriculumLecture.create({
       curri_id: id,
       courseName,
       dayOfWeek,
@@ -134,7 +134,7 @@ module.exports = {
       semester: parseInt(semester, 10),
     });
 
-    return lecture;
+    return curriculum_lecture;
   },
 
   /**
@@ -147,10 +147,10 @@ module.exports = {
       throw new Error('유효하지 않은 ID입니다.');
     }
 
-    const lecture = await Lecture.findOne({
+    const curriculum_lecture = await CurriculumLecture.findOne({
       where: { id: lectId, curri_id: curId },
     });
-    if (!lecture) throw new Error('해당 과목을 찾을 수 없습니다.');
+    if (!curriculum_lecture) throw new Error('해당 과목을 찾을 수 없습니다.');
 
     const updates = {};
     if (data.courseName) updates.courseName = data.courseName;
@@ -160,7 +160,7 @@ module.exports = {
     if (!Number.isNaN(parseInt(data.semester, 10))) {
       updates.semester = parseInt(data.semester, 10);
     }
-    return await lecture.update(updates);
+    return await curriculum_lecture.update(updates);
   },
 
   /**
@@ -171,7 +171,7 @@ async reorderLectures(curriculumId, reorderData) {
   if (Number.isNaN(id)) throw new Error('유효하지 않은 커리큘럼 ID입니다.');
 
   const promises = reorderData.map(item =>
-    Lecture.update(
+    CurriculumLecture.update(
       { order: item.order },
       { where: { id: item.lectureId, curri_id: id } }
     )
@@ -192,7 +192,7 @@ async reorderLectures(curriculumId, reorderData) {
       throw new Error('유효하지 않은 ID입니다.');
     }
 
-    const deleted = await Lecture.destroy({ where: { id: lectId, curri_id: curId } });
+    const deleted = await CurriculumLecture.destroy({ where: { id: lectId, curri_id: curId } });
     if (!deleted) throw new Error('해당 과목이 없습니다.');
     return { message: '과목이 삭제되었습니다.' };
   },
