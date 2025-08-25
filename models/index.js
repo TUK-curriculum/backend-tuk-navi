@@ -56,8 +56,8 @@ db.LectureCode.hasMany(db.Lecture, { foreignKey: 'code_id', onDelete: 'CASCADE' 
 db.LectureHistory.belongsTo(db.Lecture, { foreignKey: 'lect_id', onDelete: 'CASCADE' });
 db.Lecture.hasMany(db.LectureHistory, { foreignKey: 'lect_id', onDelete: 'CASCADE' });
 
-db.LectureHistory.belongsTo(db.User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
-db.User.hasMany(db.LectureHistory, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+db.LectureHistory.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+db.User.hasMany(db.LectureHistory, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 db.Certificate.belongsTo(db.User, { foreignKey: 'userId' });
 db.Records.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
