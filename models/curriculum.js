@@ -47,6 +47,10 @@ module.exports = (sequelize, DataTypes) => {
           defaultValue: false,
           field: 'is_default'
         },
+        conditions: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+        },
       }, {
         tableName: 'curriculums',
         timestamps: true,
@@ -60,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
             {
                 fields: ['created_at']
             }
-        ]
+        ]   
     });
 
     return Curriculum;
