@@ -33,7 +33,7 @@ module.exports = {
       const newCert = await Certificate.create({ ...data, userId });
       return { message: '어학 자격증이 등록되었습니다.', certificate: newCert };
     } catch (error) {
-      console.error('🚨 어학 자격증 등록 에러:', error.message);
+      console.error('어학 자격증 등록 에러:', error.message);
       throw new Error(error.message);
     }
   },
@@ -55,7 +55,7 @@ module.exports = {
       await cert.update(data);
       return { message: '어학 자격증이 수정되었습니다.', certificate: cert };
     } catch (error) {
-      console.error('🚨 어학 자격증 수정 에러:', error.message);
+      console.error('어학 자격증 수정 에러:', error.message);
       throw new Error(error.message);
     }
   },
@@ -76,7 +76,7 @@ module.exports = {
       await cert.destroy();
       return { message: '어학 자격증이 삭제되었습니다.' };
     } catch (error) {
-      console.error('🚨 어학 자격증 삭제 에러:', error.message);
+      console.error('어학 자격증 삭제 에러:', error.message);
       throw new Error(error.message);
     }
   },
@@ -94,7 +94,7 @@ module.exports = {
       });
       return certs;
     } catch (error) {
-      console.error('🚨 어학 자격증 조회 에러:', error.message);
+      console.error('어학 자격증 조회 에러:', error.message);
       throw new Error(error.message);
     }
   }

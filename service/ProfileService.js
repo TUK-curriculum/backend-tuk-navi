@@ -51,7 +51,7 @@ module.exports = {
 
       return profile;
     } catch (error) {
-      console.error('🚨 프로필 조회 에러:', error.message);
+      console.error('프로필 조회 에러:', error.message);
       throw new Error(error.message);
     }
   },
@@ -77,7 +77,7 @@ module.exports = {
       await user.update(fieldsToUpdate);
       return { message: '프로필이 수정되었습니다.', user };
     } catch (error) {
-      console.error('🚨 프로필 수정 에러:', error.message);
+      console.error('프로필 수정 에러:', error.message);
       throw new Error(error.message);
     }
   },
@@ -131,7 +131,7 @@ module.exports = {
         });
       }
 
-      console.log(`✅ User ${userId} onboarding completed with data:`, {
+      console.log(`User ${userId} onboarding completed with data:`, {
         name: onboardingData.name,
         grade: onboardingData.year,
         completedCredits: onboardingData.completedCredits,
@@ -140,7 +140,7 @@ module.exports = {
 
       return { message: '온보딩이 완료되었습니다.' };
     } catch (error) {
-      console.error('🚨 온보딩 완료 에러:', error.message);
+      console.error('온보딩 완료 에러:', error.message);
       throw new Error(error.message);
     }
   },
@@ -182,7 +182,7 @@ module.exports = {
         averageGrade
       };
     } catch (error) {
-      console.error('🚨 학점 요약 조회 에러:', error.message);
+      console.error('학점 요약 조회 에러:', error.message);
       throw new Error(error.message);
     }
   }

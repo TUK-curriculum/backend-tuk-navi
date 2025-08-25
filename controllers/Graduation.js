@@ -7,7 +7,7 @@ const graduationService = require('../service/GraduationService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
- * ✅ [GET] /graduation/status
+ * [GET] /graduation/status
  * 졸업 종합 상태 조회 (학점, 필수과목, 자격증, 실습 등)
  */
 router.get('/status', authMiddleware, async (req, res) => {
@@ -15,13 +15,13 @@ router.get('/status', authMiddleware, async (req, res) => {
     const status = await graduationService.getStatusOverview(req.user.userId);
     res.status(200).json({ success: true, status });
   } catch (error) {
-    console.error('🚨 졸업 종합 상태 조회 에러:', error.message);
+    console.error('졸업 종합 상태 조회 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [GET] /graduation/pass
+ * [GET] /graduation/pass
  * 학점 기준 졸업 통과 여부 조회
  */
 router.get('/pass', authMiddleware, async (req, res) => {
@@ -29,13 +29,13 @@ router.get('/pass', authMiddleware, async (req, res) => {
     const passStatus = await graduationService.getGraduationPass(req.user.userId);
     res.status(200).json({ success: true, passStatus });
   } catch (error) {
-    console.error('🚨 졸업 학점 통과 여부 조회 에러:', error.message);
+    console.error('졸업 학점 통과 여부 조회 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [GET] /graduation/required
+ * [GET] /graduation/required
  * 미이수 필수 과목 목록 조회
  */
 router.get('/required', authMiddleware, async (req, res) => {
@@ -43,13 +43,13 @@ router.get('/required', authMiddleware, async (req, res) => {
     const missing = await graduationService.getRequiredMissing(req.user.userId);
     res.status(200).json({ success: true, missingCourses: missing });
   } catch (error) {
-    console.error('🚨 졸업 필수 과목 미이수 조회 에러:', error.message);
+    console.error('졸업 필수 과목 미이수 조회 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [GET] /graduation/disqualifications
+ * [GET] /graduation/disqualifications
  * 졸업 결격 사유 조회 (어학, 필수과목, 실습 미이수 등)
  */
 router.get('/disqualifications', authMiddleware, async (req, res) => {
@@ -57,13 +57,13 @@ router.get('/disqualifications', authMiddleware, async (req, res) => {
     const disqualifications = await graduationService.getDisqualifications(req.user.userId);
     res.status(200).json({ success: true, disqualifications });
   } catch (error) {
-    console.error('🚨 졸업 결격 사유 조회 에러:', error.message);
+    console.error('졸업 결격 사유 조회 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [GET] /graduation/core
+ * [GET] /graduation/core
  * 핵심 교양 이수 여부 조회
  */
 router.get('/core', authMiddleware, async (req, res) => {
@@ -71,7 +71,7 @@ router.get('/core', authMiddleware, async (req, res) => {
     const coreStatus = await graduationService.getCoreCompletion(req.user.userId);
     res.status(200).json({ success: true, coreStatus });
   } catch (error) {
-    console.error('🚨 핵심 교양 이수 여부 조회 에러:', error.message);
+    console.error('핵심 교양 이수 여부 조회 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });

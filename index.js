@@ -48,9 +48,9 @@ const notesController = require('./controllers/Notes');
 const notificationsController = require('./controllers/Notifications');
 const chatController = require('./controllers/Chat');
 const syllabusRoutes = require('./api/syllabus');
-const lecturesRoutes = require('./api/lectures');     // ✅ 수정 완료
+const lecturesRoutes = require('./api/lectures');     // 수정 완료
 
-app.use('/api/lectures', lecturesRoutes);             // ✅ 그대로 유지
+app.use('/api/lectures', lecturesRoutes);             // 그대로 유지
 app.use('/api', syllabusRoutes);
 app.use('/main', authMiddleware, mainController);
 app.use('/certificate', authMiddleware, certificateController);

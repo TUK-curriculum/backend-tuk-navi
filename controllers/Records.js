@@ -6,7 +6,7 @@ const recordsService = require('../service/RecordsService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
- * ✅ [POST] /records/direct-input
+ * [POST] /records/direct-input
  * 직접 입력으로 수강내역 추가
  */
 router.post('/direct-input', authMiddleware, async (req, res) => {
@@ -29,7 +29,7 @@ router.post('/direct-input', authMiddleware, async (req, res) => {
       data: record.record
     });
   } catch (error) {
-    console.error('🚨 [POST /records/direct-input] 직접입력 에러:', error.message);
+    console.error('[POST /records/direct-input] 직접입력 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 수강 내역을 입력할 수 없습니다.',
@@ -39,7 +39,7 @@ router.post('/direct-input', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [POST] /records/capture
+ * [POST] /records/capture
  * 캡처 등록으로 수강내역 추가
  */
 router.post('/capture', authMiddleware, async (req, res) => {
@@ -52,7 +52,7 @@ router.post('/capture', authMiddleware, async (req, res) => {
       data: record.record
     });
   } catch (error) {
-    console.error('🚨 [POST /records/capture] 캡처 등록 에러:', error.message);
+    console.error('[POST /records/capture] 캡처 등록 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 캡처본을 등록할 수 없습니다.',
@@ -62,7 +62,7 @@ router.post('/capture', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [POST] /records/file
+ * [POST] /records/file
  * 파일 등록으로 수강내역 추가
  */
 router.post('/file', authMiddleware, async (req, res) => {
@@ -75,7 +75,7 @@ router.post('/file', authMiddleware, async (req, res) => {
       data: record.record
     });
   } catch (error) {
-    console.error('🚨 [POST /records/file] 파일 등록 에러:', error.message);
+    console.error('[POST /records/file] 파일 등록 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 파일을 등록할 수 없습니다.',
@@ -85,7 +85,7 @@ router.post('/file', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [GET] /records
+ * [GET] /records
  * 내 수강내역 전체 조회
  */
 router.get('/', authMiddleware, async (req, res) => {
@@ -98,7 +98,7 @@ router.get('/', authMiddleware, async (req, res) => {
       data: records
     });
   } catch (error) {
-    console.error('🚨 [GET /records] 수강내역 조회 에러:', error.message);
+    console.error('[GET /records] 수강내역 조회 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 수강 내역을 조회할 수 없습니다.',
@@ -108,7 +108,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [PUT] /records/:recordId
+ * [PUT] /records/:recordId
  * 특정 수강내역 수정
  */
 router.put('/:recordId', authMiddleware, async (req, res) => {
@@ -130,7 +130,7 @@ router.put('/:recordId', authMiddleware, async (req, res) => {
       data: updated.record
     });
   } catch (error) {
-    console.error('🚨 [PUT /records/:recordId] 수강내역 수정 에러:', error.message);
+    console.error('[PUT /records/:recordId] 수강내역 수정 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 수강 내역을 수정할 수 없습니다.',
@@ -140,7 +140,7 @@ router.put('/:recordId', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [DELETE] /records/:recordId
+ * [DELETE] /records/:recordId
  * 특정 수강내역 삭제
  */
 router.delete('/:recordId', authMiddleware, async (req, res) => {
@@ -161,7 +161,7 @@ router.delete('/:recordId', authMiddleware, async (req, res) => {
       message: result.message
     });
   } catch (error) {
-    console.error('🚨 [DELETE /records/:recordId] 수강내역 삭제 에러:', error.message);
+    console.error('[DELETE /records/:recordId] 수강내역 삭제 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 수강 내역을 삭제할 수 없습니다.',
@@ -171,7 +171,7 @@ router.delete('/:recordId', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [POST] /records/reviews
+ * [POST] /records/reviews
  * 수강 내역 리뷰 등록
  */
 router.post('/reviews', authMiddleware, async (req, res) => {
@@ -199,7 +199,7 @@ router.post('/reviews', authMiddleware, async (req, res) => {
       data: newReview
     });
   } catch (error) {
-    console.error('🚨 [POST /records/reviews] 리뷰 등록 에러:', error.message);
+    console.error('[POST /records/reviews] 리뷰 등록 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 리뷰를 등록할 수 없습니다.',
