@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const ACCESS_TOKEN_EXPIRATION = '1h';
 const REFRESH_TOKEN_EXPIRATION = '7d';
 
-async function signup(email, password, username, major, phone, studentId, grade, interests) {
+async function signup(email, password, username, major, phone, studentId, grade, interests, enrollmentYear, graduationYear) {
   console.log(`[authService] signup called with params:`, { email, username, major, phone, studentId, grade, gradeType: typeof grade });
 
   if (await User.findOne({ where: { email } })) {
@@ -24,6 +24,9 @@ async function signup(email, password, username, major, phone, studentId, grade,
   const gradeValue = Number(grade) || 1;  // 명시적으로 숫자 변환
   console.log(`[authService] Creating UserProfile with grade: ${gradeValue} (type: ${typeof gradeValue})`);
 
+  const enroll = enrollmentYear != null ? Number(enrollmentYear) : null;
+  const grad   = graduationYear != null ? Number(graduationYear) : null
+  
   try {
     await UserProfile.create({
       userId: u.id,
@@ -33,7 +36,9 @@ async function signup(email, password, username, major, phone, studentId, grade,
       phone: phone,
       grade: gradeValue,  // 변환된 grade 값 사용
       semester: 1,
-      interests: interests ? JSON.stringify(interests) : null  // interests를 JSON 문자열로 저장
+      interests: interests ? JSON.stringify(interests) : null,  // interests를 JSON 문자열로 저장
+      enrollment_year: enroll, 
+      graduation_year: grad,
     });
   } catch (err) {
     // Sequelize validation errors 처리

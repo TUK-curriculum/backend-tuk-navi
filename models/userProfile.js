@@ -61,7 +61,15 @@ module.exports = (sequelize, DataTypes) => {
         updated_at: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
-        }
+        },
+        enrollment_year: {
+            type: DataTypes.SMALLINT,
+            allowNull: true
+        },
+        graduation_year: {
+            type: DataTypes.SMALLINT,
+            allowNull: true
+        },
     }, {
         tableName: 'user_profiles',
         timestamps: false
