@@ -20,6 +20,7 @@ db.RequiredCourse = require('./requiredCourse')(sequelize, Sequelize.DataTypes);
 db.RequiredCredit = require('./requiredCredit')(sequelize, Sequelize.DataTypes);
 db.Review = require('./Review')(sequelize, Sequelize.DataTypes);
 db.Opinion = require('./opinion')(sequelize, Sequelize.DataTypes);
+db.RecentLecture = require('./recentLecture')(sequelize, Sequelize.DataTypes);
 
 // Register new user-related models
 

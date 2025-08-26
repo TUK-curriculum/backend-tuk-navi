@@ -7,7 +7,7 @@ const graduationService = require('../service/GraduationService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /** [GET] /graduation/status
- * 졸업 요건 조회 (학점, 필수과목, 자격증, 실습, 캡스톤 등)
+ * 졸업 요건 조회 (학점, 필수과목, 자격증, 실습, 종합설계 등)
  */
 router.get('/status', authMiddleware, async (req, res) => {
   try {
