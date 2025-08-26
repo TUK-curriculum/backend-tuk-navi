@@ -39,7 +39,7 @@ router.get('/semesters', authMiddleware, async (req, res) => {
     const { UserProfile } = require('../models');
     const profile = await UserProfile.findOne({
       where: { userId: req.user.userId },
-      attributes: ['enrollment_year', 'graduation_year', 'semester'],
+      attributes: ['enrollment_year', 'graduation_year'],
       raw: true,
     });
 
@@ -49,13 +49,9 @@ router.get('/semesters', authMiddleware, async (req, res) => {
 
     const now = new Date();
     const currentYear = now.getFullYear();
+    const month = now.getMonth() + 1;
 
-    // profile.semester(1/2) 우선, 또는 월 기준으로 추정
-    let currentSem = Number(profile.semester);
-    if (![1, 2].includes(currentSem)) {
-      const m = now.getMonth() + 1; // 1~12
-      currentSem = (m >= 3 && m <= 8) ? 1 : 2;
-    }
+    const currentSem = (month >= 2 && month <= 7) ? 1 : 2;
 
     const startYear = Number(profile.enrollment_year);
     const endYear = Math.min(Number(profile.graduation_year || currentYear), currentYear);
