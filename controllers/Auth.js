@@ -6,15 +6,24 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const passport = require('passport');
 
 /**
- * [     POST] /auth/signup
+ * [POST] /auth/signup
  * 일반 회원가입
  */
 router.post('/signup', async (req, res) => {
   try {
     console.log('Signup request body:', JSON.stringify(req.body, null, 2));
-    const { email, password, username, major, phone, studentId, grade, interests } = req.body;
-    console.log('Extracted fields:', { email, password: password ? '[HIDDEN]' : undefined, username, major, phone, studentId, grade, interests });
-    const user = await authService.signup(email, password, username, major, phone, studentId, grade, interests);
+    const {
+      email, password, username, major, phone, studentId, grade, interests,
+      enrollmentYear, graduationYear,
+      enrollment_year, graduation_year
+    } = req.body;
+
+    const enroll = enrollmentYear ?? enrollment_year ?? null;
+    const grad   = graduationYear ?? graduation_year ?? null;
+
+    console.log('Extracted fields:', { email, password: password ? '[HIDDEN]' : undefined, username, major, phone, studentId, grade, interests, enrollment_year, graduation_year });
+    const user = await authService.signup(email, password, username, major, phone, studentId, grade, interests, enroll, grad);
+    
     console.log('Signup successful for user:', { userId: user.userId, email: user.email, studentId: user.studentId, grade: user.grade });
     res.status(201).json({ message: '회원가입 완료', user });
   } catch (error) {
@@ -38,7 +47,6 @@ router.post('/signup/kakao', async (req, res) => {
   }
 });
 
-// controllers/Auth.js
 // 구글 로그인
 router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email'],
