@@ -51,7 +51,7 @@ router.get('/semesters', authMiddleware, async (req, res) => {
     const currentYear = now.getFullYear();
     const month = now.getMonth() + 1;
 
-    const currentSem = (month >= 2 && month <= 7) ? 1 : 2;
+    const currentSem = (month >= 1 && month <= 6) ? 1 : 2;
 
     const startYear = Number(profile.enrollment_year);
     const endYear = Math.min(Number(profile.graduation_year || currentYear), currentYear);
