@@ -21,10 +21,10 @@ async function checkOnboardingStatus() {
             // 테스트를 위해 onboarding_completed를 false로 설정
             if (user.UserProfile && user.UserProfile.onboarding_completed !== false) {
                 await user.UserProfile.update({ onboarding_completed: false });
-                console.log('✅ 테스트를 위해 onboarding_completed를 false로 설정했습니다.');
+                console.log('테스트를 위해 onboarding_completed를 false로 설정했습니다.');
             }
         } else {
-            console.log('❌ 사용자를 찾을 수 없습니다.');
+            console.log('사용자를 찾을 수 없습니다.');
         }
         
         process.exit(0);

@@ -1655,12 +1655,12 @@ paths:
         '500':
           description: 서버 내부 오류가 발생했습니다.
       x-swagger-router-controller: Chatbot
-  /chat/user-info/{user_id}:
+  /chat/user-info/{userId}:
     get:
       tags:
         - Chatbot
       summary: 사용자 기본 정보 가져오기
-      operationId: chatUser_infoUser_idGET
+      operationId: chatUser_infouserIdGET
       parameters:
         - name: Authorization
           in: header
@@ -1668,7 +1668,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: user_id
+        - name: userId
           in: path
           required: true
           schema:
@@ -1757,12 +1757,12 @@ paths:
         '500':
           description: 서버 내부 오류가 발생했습니다.
       x-swagger-router-controller: Chatbot
-  /chat/chatting-logs/{user_id}:
+  /chat/chatting-logs/{userId}:
     get:
       tags:
         - Chatbot
       summary: 대화 로그 조회
-      operationId: chatChatting_logsUser_idGET
+      operationId: chatChatting_logsuserIdGET
       parameters:
         - name: Authorization
           in: header
@@ -1770,7 +1770,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: user_id
+        - name: userId
           in: path
           required: true
           schema:
@@ -2190,7 +2190,7 @@ components:
     records_capture_body:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           example: 1
         file:
@@ -2199,7 +2199,7 @@ components:
     records_file_body:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           example: 1
         file:
@@ -2208,7 +2208,7 @@ components:
     records_directinput_body:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           example: 1
         record:
@@ -2223,7 +2223,7 @@ components:
     users_researches_body:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           example: 1
         issue:
@@ -2238,7 +2238,7 @@ components:
     users_certificate_body:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           example: 1
         certificate_name:
@@ -2265,7 +2265,7 @@ components:
     records_reviews_body_1:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
           example: 1
         review:
@@ -2472,7 +2472,7 @@ components:
     inline_response_200_7:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
         username:
           type: string
@@ -2488,7 +2488,7 @@ components:
         email:
           type: string
       example:
-        user_id: 0
+        userId: 0
         username: username
         major: major
         admission_year: 2020
@@ -2498,7 +2498,7 @@ components:
     chat_userinfo_body:
       type: object
       properties:
-        user_id:
+        userId:
           type: integer
         username:
           type: string

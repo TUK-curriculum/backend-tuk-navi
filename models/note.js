@@ -1,14 +1,13 @@
 module.exports = (sequelize, DataTypes) => {
     const Note = sequelize.define('Note', {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
+            autoIncrement: true
         },
         userId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
-            field: 'user_id'
         },
         title: {
             type: DataTypes.STRING(120)
@@ -33,17 +32,13 @@ module.exports = (sequelize, DataTypes) => {
             field: 'is_archived'
         },
         order: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: true
         }
     }, {
         tableName: 'notes',
         underscored: true
     });
-
-    Note.associate = models => {
-        Note.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-    };
 
     return Note;
 }; 

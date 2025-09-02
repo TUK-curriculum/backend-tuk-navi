@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
     curri_id: {
@@ -18,11 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'opinions',
     timestamps: true,
   });
-
-  Opinion.associate = (models) => {
-    Opinion.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-    Opinion.belongsTo(models.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
-  };
 
   return Opinion;
 };

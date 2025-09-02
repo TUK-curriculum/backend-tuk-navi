@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const UserSettings = sequelize.define('UserSettings', {
-        user_id: {
-            type: DataTypes.UUID,
+        userId: {
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             allowNull: false,
             references: {

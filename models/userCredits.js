@@ -2,25 +2,21 @@
 module.exports = (sequelize, DataTypes) => {
   const UserCredits = sequelize.define('UserCredits', {
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       allowNull: false
     },
     totalCredits: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       defaultValue: 140
     },
     completedCredits: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       defaultValue: 0
     }
   }, {
     tableName: 'user_credits'
   });
-
-  UserCredits.associate = models => {
-    UserCredits.belongsTo(models.User, { foreignKey: 'userId' });
-  };
 
   return UserCredits;
 };

@@ -19,10 +19,10 @@ exports.chatChatting_logsPOST = function(body,authorization) {
  * 대화 로그 조회
  *
  * authorization String Access Token (type: Bearer)
- * user_id Integer 
+ * userId Integer 
  * returns inline_response_200_9
  **/
-exports.chatChatting_logsUser_idGET = function(authorization,user_id) {
+exports.chatChatting_logsuserIdGET = function(authorization,userId) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
@@ -93,15 +93,15 @@ exports.chatUser_infoPOST = function(body,authorization) {
  * 사용자 기본 정보 가져오기
  *
  * authorization String Access Token (type: Bearer)
- * user_id Integer 
+ * userId Integer 
  * returns inline_response_200_7
  **/
-exports.chatUser_infoUser_idGET = function(authorization,user_id) {
+exports.chatUser_infouserIdGET = function(authorization,userId) {
   return new Promise(function(resolve, reject) {
     var examples = {};
     examples['application/json'] = {
   "major" : "major",
-  "user_id" : 0,
+  "userId" : 0,
   "grade" : 1,
   "admission_year" : 6,
   "email" : "email",

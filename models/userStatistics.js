@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     const UserStatistics = sequelize.define('UserStatistics', {
-        user_id: {
-            type: DataTypes.UUID,
+        userId: {
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             allowNull: false,
             references: {
@@ -10,30 +10,30 @@ module.exports = (sequelize, DataTypes) => {
             }
         },
         total_login_count: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: 0
         },
         last_login_date: {
             type: DataTypes.DATEONLY
         },
         total_study_time: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: 0
         },
         completed_courses: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: 0
         },
         notes_count: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: 0
         },
         messages_count: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: 0
         },
         favorite_courses: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER.UNSIGNED,
             defaultValue: 0
         },
         updated_at: {

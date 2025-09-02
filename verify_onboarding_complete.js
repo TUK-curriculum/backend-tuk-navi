@@ -11,7 +11,7 @@ async function verifyOnboardingComplete() {
         });
 
         if (user && user.UserProfile) {
-            console.log('📋 현재 온보딩 상태:');
+            console.log('현재 온보딩 상태:');
             console.log('- 이름:', user.UserProfile.name);
             console.log('- 온보딩 완료:', user.UserProfile.onboarding_completed);
             console.log('- 학년:', user.UserProfile.grade);
@@ -19,12 +19,12 @@ async function verifyOnboardingComplete() {
             console.log('- 관심사:', user.UserProfile.interests);
 
             if (user.UserProfile.onboarding_completed) {
-                console.log('✅ 온보딩이 완료되었습니다! 다음 로그인부터는 모달이 뜨지 않을 것입니다.');
+                console.log('온보딩이 완료되었습니다! 다음 로그인부터는 모달이 뜨지 않을 것입니다.');
             } else {
-                console.log('⏳ 온보딩이 아직 완료되지 않았습니다.');
+                console.log('온보딩이 아직 완료되지 않았습니다.');
             }
         } else {
-            console.log('❌ 사용자를 찾을 수 없습니다.');
+            console.log('사용자를 찾을 수 없습니다.');
         }
 
         process.exit(0);

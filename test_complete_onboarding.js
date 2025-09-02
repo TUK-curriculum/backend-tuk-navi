@@ -13,7 +13,7 @@ async function testCompleteOnboarding() {
 
         if (user && user.UserProfile) {
             await user.UserProfile.update({ onboarding_completed: true });
-            console.log('✅ test@test.com 사용자의 온보딩을 완료로 설정했습니다.');
+            console.log('test@test.com 사용자의 온보딩을 완료로 설정했습니다.');
 
             // 확인
             const updatedUser = await User.findOne({
@@ -28,7 +28,7 @@ async function testCompleteOnboarding() {
             console.log('- 이메일:', updatedUser.email);
             console.log('- 온보딩 완료:', updatedUser.UserProfile.onboarding_completed);
         } else {
-            console.log('❌ 사용자를 찾을 수 없습니다.');
+            console.log('사용자를 찾을 수 없습니다.');
         }
 
         process.exit(0);

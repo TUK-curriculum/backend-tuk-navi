@@ -2,12 +2,12 @@
 module.exports = (sequelize, DataTypes) => {
   const Records = sequelize.define('Records', {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true
     },
     userId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false
     },
     courseCode: {
@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     credits: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false
     },
     grade: {
@@ -37,10 +37,6 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'records'
   });
-
-  Records.associate = models => {
-    Records.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-  };
 
   return Records;
 };

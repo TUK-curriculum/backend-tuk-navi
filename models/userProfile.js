@@ -1,14 +1,10 @@
 // models/userProfile.js
 module.exports = (sequelize, DataTypes) => {
     const UserProfile = sequelize.define('UserProfile', {
-        user_id: {
-            type: DataTypes.UUID,
+        userId: {
+            type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            allowNull: false,
-            references: {
-                model: 'users',
-                key: 'id'
-            }
+            allowNull: false
         },
         name: {
             type: DataTypes.STRING,
@@ -65,7 +61,15 @@ module.exports = (sequelize, DataTypes) => {
         updated_at: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
-        }
+        },
+        enrollment_year: {
+            type: DataTypes.SMALLINT,
+            allowNull: true
+        },
+        graduation_year: {
+            type: DataTypes.SMALLINT,
+            allowNull: true
+        },
     }, {
         tableName: 'user_profiles',
         timestamps: false

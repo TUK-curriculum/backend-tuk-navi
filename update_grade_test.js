@@ -12,7 +12,7 @@ async function updateTestUserGrade() {
             console.log('현재 grade:', profile.grade);
             await profile.update({ grade: 4 });
             console.log('업데이트 후 grade:', profile.grade);
-            console.log('✅ 학년 업데이트 완료');
+            console.log('학년 업데이트 완료');
         } else {
             console.log('해당 UserProfile을 찾을 수 없습니다.');
         }

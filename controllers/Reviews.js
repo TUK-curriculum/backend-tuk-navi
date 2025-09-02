@@ -7,7 +7,7 @@ const reviewsService = require('../service/ReviewsService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
- * ✅ [GET] /reviews
+ * [GET] /reviews
  * 리뷰 전체 조회
  */
 router.get('/', authMiddleware, async (req, res) => {
@@ -20,7 +20,7 @@ router.get('/', authMiddleware, async (req, res) => {
       data: reviews
     });
   } catch (error) {
-    console.error('🚨 [GET /reviews] 리뷰 조회 에러:', error.message);
+    console.error('[GET /reviews] 리뷰 조회 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 리뷰를 조회할 수 없습니다.',
@@ -30,7 +30,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [POST] /reviews
+ * [POST] /reviews
  * 새 리뷰 등록
  */
 router.post('/', authMiddleware, async (req, res) => {
@@ -54,7 +54,7 @@ router.post('/', authMiddleware, async (req, res) => {
       data: newReview
     });
   } catch (error) {
-    console.error('🚨 [POST /reviews] 리뷰 등록 에러:', error.message);
+    console.error('[POST /reviews] 리뷰 등록 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 리뷰를 등록할 수 없습니다.',
@@ -64,7 +64,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [PUT] /reviews/:reviewId
+ * [PUT] /reviews/:reviewId
  * 리뷰 수정
  */
 router.put('/:reviewId', authMiddleware, async (req, res) => {
@@ -87,7 +87,7 @@ router.put('/:reviewId', authMiddleware, async (req, res) => {
       data: updated.review
     });
   } catch (error) {
-    console.error('🚨 [PUT /reviews/:reviewId] 리뷰 수정 에러:', error.message);
+    console.error('[PUT /reviews/:reviewId] 리뷰 수정 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 리뷰를 수정할 수 없습니다.',
@@ -97,7 +97,7 @@ router.put('/:reviewId', authMiddleware, async (req, res) => {
 });
 
 /**
- * ✅ [DELETE] /reviews/:reviewId
+ * [DELETE] /reviews/:reviewId
  * 리뷰 삭제
  */
 router.delete('/:reviewId', authMiddleware, async (req, res) => {
@@ -119,7 +119,7 @@ router.delete('/:reviewId', authMiddleware, async (req, res) => {
       message: result.message
     });
   } catch (error) {
-    console.error('🚨 [DELETE /reviews/:reviewId] 리뷰 삭제 에러:', error.message);
+    console.error('[DELETE /reviews/:reviewId] 리뷰 삭제 에러:', error.message);
     res.status(500).json({
       success: false,
       message: '서버 오류로 리뷰를 삭제할 수 없습니다.',

@@ -14,7 +14,7 @@ app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* ✅ 세션 및 passport 초기화 */
+/* 세션 및 passport 초기화 */
 app.use(session({
   secret: 'mySecretKey',
   resave: false,
@@ -47,13 +47,10 @@ const timetableController = require('./controllers/Timetable');
 const notesController = require('./controllers/Notes');
 const notificationsController = require('./controllers/Notifications');
 const chatController = require('./controllers/Chat');
-
 const syllabusRoutes = require('./api/syllabus');
+const lecturesRoutes = require('./api/lectures');     // 수정 완료
 
-// ✅ 수정된 부분: 경로 './routes/lectures' → './api/lectures'
-const lecturesRoutes = require('./api/lectures');     // ✅ 수정 완료
-
-app.use('/api/lectures', lecturesRoutes);             // ✅ 그대로 유지
+app.use('/api/lectures', lecturesRoutes);             // 그대로 유지
 app.use('/api', syllabusRoutes);
 app.use('/main', authMiddleware, mainController);
 app.use('/certificate', authMiddleware, certificateController);
@@ -76,14 +73,24 @@ app.use('/auth', authController);
 
 /* DB 연결 */
 const db = require('./models');
-const { sequelize, RequiredCourse } = db;
-RequiredCourse.sync();
+const { sequelize } = db;
 
-sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server is running on port ${PORT}`);
-    console.log(`📄 Swagger Docs available at: http://localhost:${PORT}/api-docs`);
-  });
-}).catch((error) => {
-  console.error('Unable to connect to the database:', error);
-});
+(async () => {
+  try {
+    console.log(`[DB] host=${process.env.MYSQL_HOST} db=${process.env.MYSQL_DATABASE}`);
+
+    const force = process.env.DB_SYNC_FORCE === 'true';  // 예: .env에서 DB_SYNC_FORCE=true
+    const alter = process.env.DB_SYNC_ALTER === 'true';  // 예: DB_SYNC_ALTER=true
+
+    await sequelize.sync({ force, alter });
+    console.log(`Database synced`);
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`Swagger Docs: http://localhost:${PORT}/api-docs`);
+    });
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+    process.exit(1);
+  }
+})();

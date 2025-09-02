@@ -7,7 +7,7 @@ const certificateService = require('../service/CertificateService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
- * ✅ [POST] /certificate
+ * [POST] /certificate
  * 어학 자격증 등록
  */
 router.post('/', authMiddleware, async (req, res) => {
@@ -22,13 +22,13 @@ router.post('/', authMiddleware, async (req, res) => {
     const result = await certificateService.addCertificate(req.user.userId, req.body);
     res.status(201).json({ success: true, message: result.message, certificate: result.certificate });
   } catch (error) {
-    console.error('🚨 Certificate 등록 에러:', error.message);
+    console.error('Certificate 등록 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [PUT] /certificate/:certId
+ * [PUT] /certificate/:certId
  * 어학 자격증 수정
  */
 router.put('/:certId', authMiddleware, async (req, res) => {
@@ -41,13 +41,13 @@ router.put('/:certId', authMiddleware, async (req, res) => {
     const updated = await certificateService.updateCertificate(req.user.userId, certId, req.body);
     res.status(200).json({ success: true, message: updated.message, certificate: updated.certificate });
   } catch (error) {
-    console.error('🚨 Certificate 수정 에러:', error.message);
+    console.error('Certificate 수정 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [DELETE] /certificate/:certId
+ * [DELETE] /certificate/:certId
  * 어학 자격증 삭제
  */
 router.delete('/:certId', authMiddleware, async (req, res) => {
@@ -60,13 +60,13 @@ router.delete('/:certId', authMiddleware, async (req, res) => {
     const deleted = await certificateService.deleteCertificate(req.user.userId, certId);
     res.status(200).json({ success: true, message: deleted.message });
   } catch (error) {
-    console.error('🚨 Certificate 삭제 에러:', error.message);
+    console.error('Certificate 삭제 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
 /**
- * ✅ [GET] /certificate
+ * [GET] /certificate
  * 내 어학 자격증 전체 조회
  */
 router.get('/', authMiddleware, async (req, res) => {
@@ -74,7 +74,7 @@ router.get('/', authMiddleware, async (req, res) => {
     const certificates = await certificateService.getCertificates(req.user.userId);
     res.status(200).json({ success: true, certificates });
   } catch (error) {
-    console.error('🚨 Certificate 조회 에러:', error.message);
+    console.error('Certificate 조회 에러:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 });

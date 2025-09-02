@@ -10,13 +10,13 @@ async function checkDuplicateStudentId() {
         });
         
         if (existingProfile) {
-            console.log('✅ 기존 사용자 발견:');
-            console.log(`  user_id: ${existingProfile.user_id}`);
+            console.log('기존 사용자 발견:');
+            console.log(`  userId: ${existingProfile.userId}`);
             console.log(`  name: ${existingProfile.name}`);
             console.log(`  student_id: ${existingProfile.student_id}`);
             console.log(`  grade: ${existingProfile.grade}`);
         } else {
-            console.log('❌ 해당 학번의 사용자가 없습니다.');
+            console.log('해당 학번의 사용자가 없습니다.');
         }
         
         process.exit(0);
