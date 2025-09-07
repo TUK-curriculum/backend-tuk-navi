@@ -10,10 +10,15 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             field: 'schedule_id'
         },
-        courseId: {
-            type: DataTypes.STRING(20),
+        codeId: {
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: true,
-            field: 'course_id'
+            field: 'code_id'
+        },
+        courseName: {
+            type: DataTypes.STRING(100),
+            allowNull: true,
+            field: 'course_name'
         },
         dayOfWeek: {
             type: DataTypes.STRING(10),
@@ -43,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
         },
         color: {
             type: DataTypes.STRING(10)
+        },
+        credits: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        type: {
+            type: DataTypes.STRING(20),
+            allowNull: false
         }
     }, {
         tableName: 'timetable_slots',

@@ -50,7 +50,6 @@ db.User.hasMany(db.Certificate, { foreignKey: 'userId', onDelete: 'CASCADE' });
 db.User.hasMany(db.Curriculum, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 db.Curriculum.belongsTo(db.User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
-db.Lecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
 db.Lecture.belongsTo(db.LectureCode, { foreignKey: 'code_id', onDelete: 'CASCADE' });
 db.LectureCode.hasMany(db.Lecture, { foreignKey: 'code_id', onDelete: 'CASCADE' });
 db.LectureHistory.belongsTo(db.Lecture, { foreignKey: 'lect_id', onDelete: 'CASCADE' });
@@ -92,7 +91,6 @@ db.Notification.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' }
 db.Course.hasMany(db.CourseSchedule, { foreignKey: 'courseId', as: 'schedules', onDelete: 'CASCADE' });
 db.Course.hasMany(db.Enrollment, { foreignKey: 'courseId', onDelete: 'CASCADE' });
 db.Course.hasMany(db.CompletedCourse, { foreignKey: 'courseId', onDelete: 'CASCADE' });
-db.Course.hasMany(db.TimetableSlot, { foreignKey: 'courseId', onDelete: 'SET NULL' });
 
 db.CourseSchedule.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
 db.Enrollment.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
@@ -103,8 +101,6 @@ db.Schedule.hasMany(db.CustomEvent, { foreignKey: 'scheduleId', as: 'CustomEvent
 
 db.TimetableSlot.belongsTo(db.Schedule, { foreignKey: 'scheduleId', as: 'schedule', onDelete: 'CASCADE' });
 db.CustomEvent.belongsTo(db.Schedule, { foreignKey: 'scheduleId', as: 'schedule', onDelete: 'CASCADE' });
-
-db.TimetableSlot.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'SET NULL' });
 
 db.Curriculum.hasMany(db.CurriculumLecture, { foreignKey: 'curri_id', as: 'lectures', onDelete: 'CASCADE' });
 db.CurriculumLecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
@@ -120,6 +116,8 @@ db.Review.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 db.Timetable.belongsTo(db.User, { foreignKey: 'userId' });
 
+db.TimetableSlot.belongsTo(db.LectureCode, { foreignKey: 'code_id', onDelete: 'SET NULL' });
+db.LectureCode.hasMany(db.TimetableSlot, { foreignKey: 'code_id', onDelete: 'SET NULL' });
   
 // Sequelize 인스턴스 추가
 db.sequelize = sequelize;
