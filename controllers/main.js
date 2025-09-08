@@ -102,6 +102,7 @@ router.get('/graduation/required-missing', authMiddleware, async (req, res) => {
  * [GET] /main/graduation/core
  * 핵심 교양 이수 여부 조회
  */
+/*
 router.get('/graduation/core', authMiddleware, async (req, res) => {
   try {
     const data = await mainService.getCoreCompletion(req.user.userId);
@@ -120,6 +121,7 @@ router.get('/graduation/core', authMiddleware, async (req, res) => {
     });
   }
 });
+*/
 
 /**
  * [GET] /main/users/timetable/current
