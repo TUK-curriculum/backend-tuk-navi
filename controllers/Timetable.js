@@ -53,6 +53,21 @@ router.delete('/semester/:semester', authMiddleware, async (req, res) => {
     }
 });
 
+// DELETE /timetable/course/:semester/:slotId
+router.delete('/course/:semester/:slotId', authMiddleware, async (req, res) => {
+    try {
+        const { semester, slotId } = req.params;
+        const result = await TimetableService.deleteCourse(
+            req.user.userId,
+            semester,
+            Number(slotId)
+        );
+        res.json({ success: true, data: result });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+});
+
 // POST /timetable - 새 시간표 생성
 router.post('/', authMiddleware, async (req, res) => {
     try {

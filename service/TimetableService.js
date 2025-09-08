@@ -1,4 +1,5 @@
-const { Schedule, TimetableSlot, CustomEvent, LectureCode, Sequelize } = require('../models');
+const { Schedule, TimetableSlot, CustomEvent, LectureCode, Records, Sequelize } = require('../models');
+const RecordsService = require('./RecordsService'); 
 
 class TimetableService {
     // 현재 학기 시간표 조회
@@ -236,7 +237,7 @@ class TimetableService {
         return merged;
     }
 
-    // 이수구분 매핑 함수
+    // 이수구분 매핑 함수 ac
     static mapCourseTypeCode(classification) {
         const typeMap = {
             '교필': 'GR',
@@ -295,6 +296,13 @@ class TimetableService {
             }
 
             await transaction.commit();
+
+            await RecordsService.convertTimetableToRecords({
+                userId,
+                semester: semesterCode,
+                overwrite: true
+            });
+
             return this.getScheduleById(schedule.id);
         } catch (error) {
             await transaction.rollback();
@@ -343,9 +351,14 @@ class TimetableService {
                     transaction
                 }
             );
-            console.log('Direct SQL result:', result);
-
             await transaction.commit();
+
+            await RecordsService.convertTimetableToRecords({
+                userId,
+                semester: semesterCode,
+                overwrite: true
+            });
+
             return this.getScheduleById(schedule.id);
         } catch (error) {
             await transaction.rollback();
@@ -380,6 +393,69 @@ class TimetableService {
             return true;
         } catch (error) {
             await transaction.rollback();
+            throw error;
+        }
+    }
+
+    static async deleteCourse(userId, semesterCode, slotId) {
+        const transaction = await Schedule.sequelize.transaction();
+        try {
+            // 1. 삭제할 슬롯 조회
+            const slot = await TimetableSlot.findOne({
+                where: { id: slotId },
+                include: [{ model: LectureCode, as: 'LectureCode', attributes: ['id', 'code'] }],
+                transaction
+            });
+
+            if (!slot) {
+                throw new Error('해당 슬롯을 찾을 수 없습니다.');
+            }
+
+            const codeId = slot.codeId;
+            const lectureCode = slot.LectureCode?.code || null;
+            const courseName = slot.courseName;
+
+            // 2. 학기 schedule 조회
+            const schedule = await Schedule.findOne({
+                where: { userId, semesterCode },
+                transaction
+            });
+
+            if (!schedule) {
+                throw new Error('해당 학기의 시간표를 찾을 수 없습니다.');
+            }
+
+            // 3. 동일 학기, 동일 codeId/courseName의 모든 slot 삭제
+            const whereSlot = { scheduleId: schedule.id };
+            if (codeId) {
+                whereSlot.codeId = codeId;
+            } else {
+                whereSlot.courseName = courseName;
+            }
+
+            const deletedSlots = await TimetableSlot.destroy({
+                where: whereSlot,
+                transaction
+            });
+
+            // 4. Records 해당 과목만 삭제
+            const whereRecord = { userId, semester: semesterCode };
+            if (lectureCode) {
+                whereRecord.courseCode = lectureCode;
+            } else {
+                whereRecord.courseName = courseName;
+            }
+
+            const deletedRecords = await Records.destroy({
+                where: whereRecord,
+                transaction
+            });
+
+            await transaction.commit();
+            return { deletedSlots, deletedRecords };
+        } catch (error) {
+            await transaction.rollback();
+            console.error('[TimetableService] deleteCourse error:', error);
             throw error;
         }
     }

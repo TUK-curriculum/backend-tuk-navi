@@ -1,103 +1,193 @@
 // service/GraduationService.js
 'use strict';
 
-const { Records, Certificate, RecentLecture, User } = require('../models');
+const { Records, Certificate, RecentLecture, User,  GraduationInfo, LectureReplacement, UserProfile } = require('../models');
 const { Op } = require('sequelize');
 
 // 전공 매핑 
 const toMajorCode = (dept) => {
   if (!dept) return null;
-  if (dept.trim() === '소프트웨어학과') return 'SW';
-  if (dept.trim() === '컴퓨터공학과') return 'CE';
+  if (dept.trim() === '소프트웨어전공') return 'SW';
+  if (dept.trim() === '컴퓨터공학전공') return 'CE';
   return null;
 };
 
-const THRESHOLDS = {
-  totalCredits: 140,
-  liberalArts: 42,
-  majorCredits: 75,
-  practicalCount: 1,
-};
+// 학번별 졸업 요건
+function getThresholds(enrollmentYear) {
+  if (enrollmentYear === 2012) {
+    return { totalCredits: 150, liberalArts: 27, majorCredits: 75, practicalCount: 1 };
+  }
+  if (enrollmentYear >= 2013 && enrollmentYear <= 2015) {
+    return { totalCredits: 150, liberalArts: 27, majorCredits: 75, practicalCount: 1 };
+  }
+  if (enrollmentYear === 2016) {
+    return { totalCredits: 150, liberalArts: 27, majorCredits: 75, practicalCount: 1 };
+  }
+  if (enrollmentYear >= 2017 && enrollmentYear <= 2020) {
+    return { totalCredits: 140, liberalArts: 25, majorCredits: 70, practicalCount: 1 };
+  }
+  if (enrollmentYear >= 2021 && enrollmentYear <= 2024) {
+    return { totalCredits: 140, liberalArts: 42, majorCredits: 75, practicalCount: 1 };
+  }
+  if (enrollmentYear >= 2025) {
+    return { totalCredits: 130, liberalArts: 37, majorCredits: 69, practicalCount: 1 };
+  }
+  return { totalCredits: 140, liberalArts: 25, majorCredits: 70, practicalCount: 1 };
+}
 
 // 성적 통과 여부
-const isPassedGrade = (g) => !new Set(['F', 'U', '미이수', null, undefined]).has(g);
+const isPassedGrade = (g) => {
+  if (g === null || g === undefined) return true;
+  // F/NP만 제외
+  return !new Set(['F', 'NP']).has(g);
+};
 
 const norm     = (s) => (typeof s === 'string' ? s.trim().toUpperCase() : s);
 const normName = (s) => (typeof s === 'string' ? s.replace(/\s+/g, '').trim() : s);
 const CAPSTONE_NAMES = ['종합설계기획', '종합설계1', '종합설계2'].map(normName);
 const CAPSTONE_GROUPS = ['종합설계기획', '종합설계1', '종합설계2'];
 
-/** 미이수 필수과목 조회 */
-async function getRequiredMissing(userId) {
-  // 사용자 전공
-  const user = await User.findOne({
-    where: { id: userId },
-    attributes: ['major'],
+async function saveGraduationInfo(userId, overview) {
+  const { pass, missingCourses, disqualifications, flags } = overview;
+
+  // 사용자의 이수 내역 전체 가져오기
+  const recs = await Records.findAll({
+    where: { userId },
     raw: true,
   });
-  if (!user) throw new Error('사용자 정보를 찾을 수 없습니다.');
-  
-  const userMajorCode = toMajorCode(user.major);
-  if (!userMajorCode) {
-    throw new Error(`지원하지 않는 전공: ${user.major}`);
+
+  // 카테고리별 학점 합산
+  let majorRequired = 0, majorElective = 0, generalRequired = 0, generalElective = 0;
+  let total = 0;
+
+  for (const r of recs) {
+    if (!isPassedGrade(r.grade)) continue;
+    const credits = Number(r.credits) || 0;
+    total += credits;
+
+    switch (r.type) {
+      case 'MR': majorRequired   += credits; break;
+      case 'ME': majorElective   += credits; break;
+      case 'GR': generalRequired += credits; break;
+      case 'GE': generalElective += credits; break;
+      default: break;
+    }
   }
 
-  // 해당 전공 필수 과목 (GR = 교필, MR = 전필)
-  const required = await RecentLecture.findAll({
+  const remaining = pass.total.threshold - total;
+  const ratio = ((total / pass.total.threshold) * 100).toFixed(2);
+
+  await GraduationInfo.upsert({
+    userId,
+    total_credits: total,
+    major_required: majorRequired,
+    major_elective: majorElective,
+    general_required: generalRequired,
+    general_elective: generalElective,
+    total_required: pass.total.threshold,
+    remaining_credits: remaining > 0 ? remaining : 0,
+    progress_ratio: ratio,
+    extra: flags,
+    diagnosis: {
+      missingCourses: missingCourses.missing,
+      disqualifications
+    },
+    updated_at: new Date()
+  });
+}
+
+/** 미이수 필수과목 조회 */
+async function getRequiredMissing(userId) {
+  // 사용자 프로필 조회
+  const profile = await UserProfile.findOne({
+    where: { userId },
+    attributes: ['major', 'student_id', 'enrollment_year'],
+    raw: true,
+  });
+  if (!profile) throw new Error('사용자 정보를 찾을 수 없습니다.');
+
+  const userMajorCode = toMajorCode(profile.major);
+  if (!userMajorCode) throw new Error(`지원하지 않는 전공: ${profile.major}`);
+
+  // 2025학번 이상 여부
+  const enrollmentYear = Number(profile.enrollment_year);
+  const studentIdYear = Number((profile.student_id || '').substring(0, 4));
+  const isNewStudent =
+    (enrollmentYear && enrollmentYear >= 2025) ||
+    (studentIdYear && studentIdYear >= 2025);
+
+  // 전공필수(MR), 교양필수(GR) 조회
+  let required = await RecentLecture.findAll({
     where: { type: { [Op.in]: ['GR', 'MR'] }, major: userMajorCode },
     raw: true,
   });
 
-  // 사용자 이수 내역 확인
-  const takenAll = await Records.findAll({
-    where: { userId, grade: { [Op.ne]: null } },
-    raw: true,
+  required = required.filter(r => {
+    const name = normName(r.name);
+    if (name === '종합설계기획') return r.credits === 1;
+    if (name === '종합설계1')   return r.credits === 3;
+    if (name === '종합설계2')   return r.credits === 3;
+    return true;
   });
+
+  // 사용자 이수 내역
+  const takenAll = await Records.findAll({ where: { userId }, raw: true });
+
   const passedCodes = new Set(
     takenAll.filter(t => isPassedGrade(t.grade))
-            .map(t => norm(t.courseCode || t.code))
+            .map(t => norm(t.courseCode))
+            .filter(Boolean)
+  );
+  const passedNames = new Set(
+    takenAll.filter(t => isPassedGrade(t.grade))
+            .map(t => normName(t.courseName || t.name))
             .filter(Boolean)
   );
 
-  // 종합설계 외 미이수 필수 과목
-  const nonCapstoneMissing = required
-    .filter(r => !CAPSTONE_GROUPS.includes(r.name))                 // 종합설계 제외
-    .filter(r => !passedCodes.has(norm(r.code)))                    // 아직 못 들음
-    .map(r => ({
-      courseCode: r.code,
-      name: r.name,
-      credits: r.credits,
-      category: r.type === 'MR' ? 'major_required' : 'general_required',
-    }));
-
-  const missing = [];
-  missing.push(...nonCapstoneMissing);
-
-  // 종합설계 과목 미이수 확인
-  const grouped = {};
-  for (const r of required) {
-    if (CAPSTONE_GROUPS.includes(r.name)) {
-      (grouped[r.name] ||= []).push(r);
-    }
+  // 대체 인정 강의 매핑
+  const replacements = await LectureReplacement.findAll({ raw: true });
+  const replaceMap = new Map();
+  for (const r of replacements) {
+    const orig = norm(r.original_code);
+    const repl = norm(r.replacement_code);
+    if (!replaceMap.has(orig)) replaceMap.set(orig, []);
+    replaceMap.get(orig).push(repl);
   }
 
-  for (const groupName of CAPSTONE_GROUPS) {
-    const groupCourses = grouped[groupName] || [];
-    if (groupCourses.length > 0) {
-      const passedInGroup = groupCourses.some(c => passedCodes.has(norm(c.code)));
-      if (!passedInGroup) {
-        const rep = groupCourses[0]; 
-        missing.push({
-          courseCode: rep.code,
-          name: rep.name,
-          credits: rep.credits,
-          category: 'major_required',
-        });
-      }
-    }
-  }
+  const missing = required.filter(r => {
+    const code = norm(r.code);
+    const name = normName(r.name);
 
-  return { missing, countMissing: missing.length, totalRequired: required.length };
+    if (CAPSTONE_NAMES.includes(name)) {
+      return !passedNames.has(name);
+    }
+
+    if (passedCodes.has(code)) return false;
+
+    // 대체 코드 매칭
+    const replList = replaceMap.get(code) || [];
+    for (const repl of replList) {
+      if (passedCodes.has(repl)) return false;
+    }
+
+    // 1학년 필수 과목 - 대체 교과목 없다면 25학번 이상만 미이수 처리
+    if (r.type === 'GR' || r.type === 'MR' && r.credits === 1 && replList.length === 0) {
+      return isNewStudent;
+    }
+
+    return true;
+  }).map(r => ({
+    courseCode: r.code,
+    name: r.name,
+    credits: r.credits,
+    category: r.type === 'GR' ? 'general_required' : 'major_required'
+  }));
+
+  return {
+    missing,
+    countMissing: missing.length,
+    totalRequired: required.length,
+  };
 }
 
 /** 종합설계 이수 여부 */
@@ -119,26 +209,28 @@ async function getCapstoneCompleted(userId) {
 
 module.exports = {
   /** 총·교양·전공·실습 통과 여부 */
-  async getGraduationPass(userId) {
+  async getGraduationPass(userId, profile) {
     const recs = await Records.findAll({
-      where: { userId, grade: { [Op.ne]: null } },
+      where: { userId },
       raw: true,
     });
+
+    const thresholds = getThresholds(Number(profile.enrollment_year));
 
     let total = 0, lib = 0, major = 0, practical = 0;
     for (const r of recs) {
       if (!isPassedGrade(r.grade)) continue;
       total += Number(r.credits) || 0;
-      if (r.type === 'general')   lib += Number(r.credits) || 0;
-      if (r.type === 'major')     major += Number(r.credits) || 0;
-      if (r.type === 'practical') practical += 1;
+      if (['GR', 'GE'].includes(r.type)) lib += Number(r.credits) || 0;
+      if (['MR', 'ME'].includes(r.type)) major += Number(r.credits) || 0;
+      if (r.type === 'RE') practical += 1;
     }
 
     return {
-      liberal:   { passed: lib >= THRESHOLDS.liberalArts,   actual: lib,   threshold: THRESHOLDS.liberalArts },
-      major:     { passed: major >= THRESHOLDS.majorCredits, actual: major, threshold: THRESHOLDS.majorCredits },
-      practical: { passed: practical >= THRESHOLDS.practicalCount, actual: practical, threshold: THRESHOLDS.practicalCount },
-      total:     { passed: total >= THRESHOLDS.totalCredits, actual: total, threshold: THRESHOLDS.totalCredits },
+      liberal:   { passed: lib >= thresholds.liberalArts,   actual: lib,   threshold: thresholds.liberalArts },
+      major:     { passed: major >= thresholds.majorCredits, actual: major, threshold: thresholds.majorCredits },
+      practical: { passed: practical >= thresholds.practicalCount, actual: practical, threshold: thresholds.practicalCount },
+      total:     { passed: total >= thresholds.totalCredits, actual: total, threshold: thresholds.totalCredits },
     };
   },
 
@@ -146,8 +238,9 @@ module.exports = {
   getCapstoneCompleted,   // 종합설계 이수 여부
 
   /** 결격 사유 (어학/필수과목/현장실무/종합설계) */
-  async getDisqualifications(userId) {
+  async getDisqualifications(userId, profile) {
     const disc = [];
+    const thresholds = getThresholds(Number(profile.enrollment_year));
 
     // 어학
     const certCount = await Certificate.count({ where: { userId } });
@@ -162,7 +255,7 @@ module.exports = {
     const practicalTaken = await Records.count({
       where: { userId, type: 'practical', grade: { [Op.ne]: null } },
     });
-    if (practicalTaken < THRESHOLDS.practicalCount) disc.push('현장실무교과 미이수');
+    if (practicalTaken < thresholds.practicalCount) disc.push('현장실무교과 미이수');
 
     // 종합설계
     const capstonePass = await getCapstoneCompleted(userId);
@@ -171,11 +264,12 @@ module.exports = {
     return disc;
   },
 
-  /** 핵심교양 이수 여부 */
+/*
+  // 핵심교양 이수 여부
   async getCoreCompletion(userId) {
     const libCredits =
       (await Records.sum('credits', {
-        where: { userId, type: 'general', grade: { [Op.ne]: null } },
+        where: { userId, type: { [Op.in]: ['GR', 'GE'] }, grade: { [Op.ne]: null } },
       })) || 0;
 
     return {
@@ -184,12 +278,17 @@ module.exports = {
       threshold: THRESHOLDS.liberalArts,
     };
   },
+*/
+
 
   /** 종합 현황 */
   async getStatusOverview(userId) {
-    const pass = await this.getGraduationPass(userId);
+    const profile = await UserProfile.findOne({ where: { userId }, raw: true });
+    if (!profile) throw new Error('사용자 정보를 찾을 수 없습니다.');
+
+    const pass = await this.getGraduationPass(userId, profile);
     const missingCourses = await getRequiredMissing(userId);
-    const disqualifications = await this.getDisqualifications(userId);
+    const disqualifications = await this.getDisqualifications(userId, profile);
 
     const flags = {
       englishRequirementMet: !disqualifications.includes('어학자격 미취득'),
@@ -197,6 +296,18 @@ module.exports = {
       capstoneCompleted:     !disqualifications.includes('종합설계 미이수'),
     };
 
-    return { pass, missingCourses, disqualifications, flags };
-  },
+    const overview = { 
+      pass, 
+      missingCourses, 
+      disqualifications, 
+      flags,
+      totalCredits: pass.total.actual,
+      majorCredits: pass.major.actual,
+      liberalCredits: pass.liberal.actual
+    };
+
+    await saveGraduationInfo(userId, overview);
+
+    return overview;
+  }
 };
