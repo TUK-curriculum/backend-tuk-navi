@@ -8,25 +8,25 @@ module.exports = (sequelize, DataTypes) => {
         userId: {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
+            field: 'user_id'
         },
         semesterCode: {
-            type: DataTypes.STRING(10),
+            type: DataTypes.STRING(20),
+            allowNull: false,
             field: 'semester_code'
         },
-        createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-            field: 'created_at'
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-            field: 'updated_at'
+        year: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: () => new Date().getFullYear()
         }
     }, {
         tableName: 'schedules',
-        underscored: true
+        underscored: true,
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
     });
 
     return Schedule;
-}; 
+};

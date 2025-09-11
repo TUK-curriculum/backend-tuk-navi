@@ -93,6 +93,7 @@ router.get('/disqualifications', authMiddleware, async (req, res) => {
  * [GET] /graduation/core 
  * 핵심 교양 이수 여부 조회
  */
+/*
 router.get('/core', authMiddleware, async (req, res) => {
   try {
     const coreStatus = await graduationService.getCoreCompletion(req.user.userId);
@@ -109,6 +110,7 @@ router.get('/core', authMiddleware, async (req, res) => {
     });
   }
 });
+*/
 
 /*
 router.get('/requirements', authMiddleware, async (req, res) => {

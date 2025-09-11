@@ -12,7 +12,7 @@ db.Curriculum = require('./curriculum')(sequelize, Sequelize.DataTypes);
 db.LectureCode = require('./lectureCode')(sequelize, Sequelize.DataTypes);
 db.Lecture = require('./lecture')(sequelize, Sequelize.DataTypes);
 db.LectureHistory = require('./lectureHistory')(sequelize, Sequelize.DataTypes);
-db.Records = require('./records')(sequelize, Sequelize.DataTypes);
+db.Records = require('./Records')(sequelize, Sequelize.DataTypes);
 db.Certificate = require('./certificate')(sequelize, Sequelize.DataTypes);
 db.UserCredits = require('./userCredits')(sequelize, Sequelize.DataTypes);
 db.Timetable = require('./timetable')(sequelize, Sequelize.DataTypes);
@@ -21,6 +21,7 @@ db.RequiredCredit = require('./requiredCredit')(sequelize, Sequelize.DataTypes);
 db.Review = require('./Review')(sequelize, Sequelize.DataTypes);
 db.Opinion = require('./opinion')(sequelize, Sequelize.DataTypes);
 db.RecentLecture = require('./recentLecture')(sequelize, Sequelize.DataTypes);
+db.LectureReplacement = require('./lectureReplacement')(sequelize, Sequelize.DataTypes);
 
 // Register new user-related models
 
@@ -50,7 +51,6 @@ db.User.hasMany(db.Certificate, { foreignKey: 'userId', onDelete: 'CASCADE' });
 db.User.hasMany(db.Curriculum, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 db.Curriculum.belongsTo(db.User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
-db.Lecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
 db.Lecture.belongsTo(db.LectureCode, { foreignKey: 'code_id', onDelete: 'CASCADE' });
 db.LectureCode.hasMany(db.Lecture, { foreignKey: 'code_id', onDelete: 'CASCADE' });
 db.LectureHistory.belongsTo(db.Lecture, { foreignKey: 'lect_id', onDelete: 'CASCADE' });
@@ -92,7 +92,6 @@ db.Notification.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' }
 db.Course.hasMany(db.CourseSchedule, { foreignKey: 'courseId', as: 'schedules', onDelete: 'CASCADE' });
 db.Course.hasMany(db.Enrollment, { foreignKey: 'courseId', onDelete: 'CASCADE' });
 db.Course.hasMany(db.CompletedCourse, { foreignKey: 'courseId', onDelete: 'CASCADE' });
-db.Course.hasMany(db.TimetableSlot, { foreignKey: 'courseId', onDelete: 'SET NULL' });
 
 db.CourseSchedule.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
 db.Enrollment.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'CASCADE' });
@@ -103,8 +102,6 @@ db.Schedule.hasMany(db.CustomEvent, { foreignKey: 'scheduleId', as: 'CustomEvent
 
 db.TimetableSlot.belongsTo(db.Schedule, { foreignKey: 'scheduleId', as: 'schedule', onDelete: 'CASCADE' });
 db.CustomEvent.belongsTo(db.Schedule, { foreignKey: 'scheduleId', as: 'schedule', onDelete: 'CASCADE' });
-
-db.TimetableSlot.belongsTo(db.Course, { foreignKey: 'courseId', onDelete: 'SET NULL' });
 
 db.Curriculum.hasMany(db.CurriculumLecture, { foreignKey: 'curri_id', as: 'lectures', onDelete: 'CASCADE' });
 db.CurriculumLecture.belongsTo(db.Curriculum, { foreignKey: 'curri_id', as: 'curriculum' });
@@ -120,6 +117,8 @@ db.Review.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 db.Timetable.belongsTo(db.User, { foreignKey: 'userId' });
 
+db.TimetableSlot.belongsTo(db.LectureCode, { foreignKey: 'code_id', onDelete: 'SET NULL' });
+db.LectureCode.hasMany(db.TimetableSlot, { foreignKey: 'code_id', onDelete: 'SET NULL' });
   
 // Sequelize 인스턴스 추가
 db.sequelize = sequelize;

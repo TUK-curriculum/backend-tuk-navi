@@ -146,39 +146,83 @@ module.exports = {
   },
 
   /**
-   * 사용자 총 이수 학점 및 평균 평점 조회
-   * @param {number} userId - 사용자 ID
-   * @returns {Promise<Object>} 이수 학점, 평균 평점
+   * 사용자 총 이수 학점, 전공/교양 학점, 평균 평점 조회
    */
   async getCreditSummary(userId) {
     try {
       const records = await Records.findAll({
-        where: {
-          userId,
-          grade: { [Op.ne]: null }
-        }
+        where: { userId }
       });
 
       let totalCredits = 0;
+      let majorCredits = 0;
+      let liberalCredits = 0;
       let gradeSum = 0;
       let gradedCredits = 0;
 
-      records.forEach(record => {
-        totalCredits += record.credits || 0;
+      const gradeMap = {
+        'A+': 4.5, 'A0': 4.0,
+        'B+': 3.5, 'B0': 3.0,
+        'C+': 2.5, 'C0': 2.0,
+        'D+': 1.5, 'D0': 1.0,
+        'F': 0.0,
+        'P': null, 'NP': null
+      };
 
-        const numericGrade = parseFloat(record.grade);
-        if (!isNaN(numericGrade)) {
-          gradeSum += numericGrade * (record.credits || 0);
-          gradedCredits += record.credits || 0;
+      // 강의코드 기준으로 중복 제거 후 최고 성적만 선택
+      const bestRecords = {};
+      records.forEach(record => {
+        const key = record.courseCode || record.courseName;
+        const numericGrade = gradeMap[record.grade];
+
+        if (!bestRecords[key]) {
+          bestRecords[key] = record;
+        } else {
+          const existingGrade = gradeMap[bestRecords[key].grade];
+          if ((numericGrade ?? -1) > (existingGrade ?? -1)) {
+            bestRecords[key] = record;
+          }
         }
       });
 
-      const averageGrade = gradedCredits > 0
-        ? (gradeSum / gradedCredits).toFixed(2)
-        : null;
+      // 중복 제거된 기록으로 학점 계산
+      Object.values(bestRecords).forEach((record) => {
+        const credits = record.credits || 0;
+
+        // P/NP 포함 여부 확인
+        if (!record.grade || record.grade === 'P' || record.grade === 'NP') {
+          totalCredits += credits;
+          if (['ME', 'MR'].includes(record.type)) {
+            majorCredits += credits;
+          } else if (['GE', 'GR'].includes(record.type)) {
+            liberalCredits += credits;
+          }
+          // 성적에는 반영하지 않음
+          return;
+        }
+
+        // 일반 성적 처리
+        totalCredits += credits;
+        if (['ME', 'MR'].includes(record.type)) {
+          majorCredits += credits;
+        } else if (['GE', 'GR'].includes(record.type)) {
+          liberalCredits += credits;
+        }
+
+        const numericGrade = gradeMap[record.grade];
+        if (numericGrade !== undefined && numericGrade !== null) {
+          gradeSum += numericGrade * credits;
+          gradedCredits += credits;
+        }
+      });
+
+      const averageGrade =
+        gradedCredits > 0 ? (gradeSum / gradedCredits).toFixed(2) : null;
 
       return {
         totalCredits,
+        majorCredits,
+        liberalCredits,
         averageGrade
       };
     } catch (error) {
