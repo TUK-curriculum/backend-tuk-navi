@@ -39,29 +39,58 @@ router.get('/', authMiddleware, async (req, res) => {
 
 /**
  * [PUT] /profile
- * 내 프로필 수정 (부분 수정 가능)
+ * 내 프로필 수정
  */
 router.put('/', authMiddleware, async (req, res) => {
   try {
-    const { username, phone, major } = req.body;
+    const {
+      username, name, studentId, major, grade, semester, phone,
+      interests, completedCredits, career, industry, 
+      remainingSemesters, maxCreditsPerTerm, enrollmentYear, 
+      graduationYear, onboardingCompleted
+    } = req.body;
 
-    // 수정할 필드 하나라도 없으면 에러
-    if (!username && !phone && !major) {
+    const hasUpdateFields = username || name || studentId || major || 
+      grade !== undefined || semester !== undefined || phone || 
+      interests || completedCredits !== undefined || career || industry || 
+      remainingSemesters !== undefined || maxCreditsPerTerm !== undefined || 
+      enrollmentYear !== undefined || graduationYear !== undefined ||
+      onboardingCompleted !== undefined;
+
+    if (!hasUpdateFields) {
       return res.status(400).json({
         success: false,
-        message: '수정할 항목(username, phone, major) 중 하나 이상이 필요합니다.',
+        message: '수정할 항목이 필요합니다.',
         data: null
       });
     }
 
-    const updatedResult = await profileService.updateProfile(req.user.userId, { username, phone, major });
+    const updateData = {};
+    if (username) updateData.username = username;
+    if (name) updateData.name = name;
+    if (studentId) updateData.studentId = studentId;
+    if (major) updateData.major = major;
+    if (grade !== undefined) updateData.grade = parseInt(grade);
+    if (semester !== undefined) updateData.semester = parseInt(semester);
+    if (phone) updateData.phone = phone;
+    if (interests) updateData.interests = Array.isArray(interests) ? interests : [];
+    if (completedCredits !== undefined) updateData.completedCredits = parseInt(completedCredits);
+    if (career) updateData.career = career;
+    if (industry) updateData.industry = industry;
+    if (remainingSemesters !== undefined) updateData.remainingSemesters = parseInt(remainingSemesters);
+    if (maxCreditsPerTerm !== undefined) updateData.maxCreditsPerTerm = parseInt(maxCreditsPerTerm);
+    if (enrollmentYear !== undefined) updateData.enrollmentYear = parseInt(enrollmentYear);
+    if (graduationYear !== undefined) updateData.graduationYear = parseInt(graduationYear);
+    if (onboardingCompleted !== undefined) updateData.onboardingCompleted = Boolean(onboardingCompleted);
+
+    const updatedResult = await profileService.updateProfile(req.user.userId, updateData);
 
     res.status(200).json({
       success: true,
       message: '프로필이 성공적으로 수정되었습니다.',
       data: updatedResult.user,
       meta: {
-        updatedFields: Object.keys(req.body)
+        updatedFields: Object.keys(updateData)
       }
     });
   } catch (error) {
