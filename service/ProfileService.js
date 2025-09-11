@@ -20,7 +20,12 @@ module.exports = {
         include: [{
           model: UserProfile,
           required: false,
-          attributes: ['name', 'student_id', 'major', 'grade', 'semester', 'phone', 'onboarding_completed', 'interests', 'completed_credits', 'career', 'industry', 'remaining_semesters', 'max_credits_per_term']
+          attributes: [
+            'name', 'student_id', 'major', 'grade', 'semester', 'phone', 
+            'onboarding_completed', 'interests', 'completed_credits', 
+            'career', 'industry', 'remaining_semesters', 'max_credits_per_term',
+            'enrollment_year', 'graduation_year', 'updated_at'
+          ]
         }]
       });
 
@@ -39,14 +44,17 @@ module.exports = {
         semester: user.UserProfile?.semester || 1,
         phone: user.UserProfile?.phone || user.phone || '',
         onboardingCompleted: user.UserProfile?.onboarding_completed || false,
-        interests: user.UserProfile?.interests ? JSON.parse(user.UserProfile.interests) : [],
+        interests: user.UserProfile?.interests || [],
         completedCredits: user.UserProfile?.completed_credits || 0,
         career: user.UserProfile?.career || '',
         industry: user.UserProfile?.industry || '',
         remainingSemesters: user.UserProfile?.remaining_semesters || 0,
         maxCreditsPerTerm: user.UserProfile?.max_credits_per_term || 18,
+        enrollmentYear: user.UserProfile?.enrollment_year || null,
+        graduationYear: user.UserProfile?.graduation_year || null,
         provider: user.provider,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        updatedAt: user.UserProfile?.updated_at
       };
 
       return profile;
@@ -57,25 +65,68 @@ module.exports = {
   },
 
   /**
-   * 사용자 기본 프로필 수정
+   * 사용자 프로필 수정
    * @param {number} userId - 사용자 ID
    * @param {Object} data - 수정할 프로필 데이터
    * @returns {Promise<Object>} 수정된 사용자 정보
    */
   async updateProfile(userId, data) {
     try {
-      const user = await User.findByPk(userId);
-      if (!user) {
-        throw new Error('수정할 사용자를 찾을 수 없습니다.');
+      const { UserProfile } = require('../models');
+
+      // User 테이블 업데이트 필드
+      const userFields = {};
+      if (data.phone) userFields.phone = data.phone;
+      if (data.major) userFields.major = data.major;
+
+      // UserProfile 테이블 업데이트 필드
+      const profileFields = {};
+      if (data.username || data.name) profileFields.name = data.username || data.name;
+      if (data.studentId) profileFields.student_id = data.studentId;
+      if (data.major) profileFields.major = data.major;
+      if (data.grade !== undefined) profileFields.grade = data.grade;
+      if (data.semester !== undefined) profileFields.semester = data.semester;
+      if (data.phone) profileFields.phone = data.phone;
+      if (data.interests) profileFields.interests = JSON.stringify(data.interests);
+      if (data.completedCredits !== undefined) profileFields.completed_credits = data.completedCredits;
+      if (data.career) profileFields.career = data.career;
+      if (data.industry) profileFields.industry = data.industry;
+      if (data.remainingSemesters !== undefined) profileFields.remaining_semesters = data.remainingSemesters;
+      if (data.maxCreditsPerTerm !== undefined) profileFields.max_credits_per_term = data.maxCreditsPerTerm;
+      if (data.enrollmentYear !== undefined) profileFields.enrollment_year = data.enrollmentYear;
+      if (data.graduationYear !== undefined) profileFields.graduation_year = data.graduationYear;
+      if (data.onboardingCompleted !== undefined) profileFields.onboarding_completed = data.onboardingCompleted;
+      
+      profileFields.updated_at = new Date();
+
+      // User 테이블 업데이트
+      if (Object.keys(userFields).length > 0) {
+        const user = await User.findByPk(userId);
+        if (!user) {
+          throw new Error('수정할 사용자를 찾을 수 없습니다.');
+        }
+        await user.update(userFields);
       }
 
-      const fieldsToUpdate = {};
-      if (data.username) fieldsToUpdate.username = data.username;
-      if (data.phone) fieldsToUpdate.phone = data.phone;
-      if (data.major) fieldsToUpdate.major = data.major;
+      // UserProfile 테이블 업데이트 (upsert)
+      if (Object.keys(profileFields).length > 0) {
+        const [userProfile, created] = await UserProfile.findOrCreate({
+          where: { userId },
+          defaults: { userId, ...profileFields }
+        });
 
-      await user.update(fieldsToUpdate);
-      return { message: '프로필이 수정되었습니다.', user };
+        if (!created) {
+          await userProfile.update(profileFields);
+        }
+      }
+
+      // 업데이트된 프로필 정보 반환
+      const updatedProfile = await this.getProfile(userId);
+      
+      return { 
+        message: '프로필이 수정되었습니다.',
+        user: updatedProfile
+      };
     } catch (error) {
       console.error('프로필 수정 에러:', error.message);
       throw new Error(error.message);
@@ -83,151 +134,103 @@ module.exports = {
   },
 
   /**
-   * 온보딩 완료 상태 업데이트
+   * 온보딩 완료 처리
    * @param {number} userId - 사용자 ID
    * @param {Object} onboardingData - 온보딩 데이터
-   * @returns {Promise<Object>} 업데이트 결과
+   * @returns {Promise<Object>} 결과 메시지
    */
-  async completeOnboarding(userId, onboardingData = {}) {
+  async completeOnboarding(userId, onboardingData) {
     try {
-      const { UserProfile } = require('../models');
+      const updateData = {
+        ...onboardingData,
+        onboardingCompleted: true
+      };
 
-      let userProfile = await UserProfile.findOne({
-        where: { userId: userId }
-      });
-
-      if (!userProfile) {
-        // 프로필이 없으면 새로 생성
-        userProfile = await UserProfile.create({
-          userId: userId,
-          name: onboardingData.name || '',
-          student_id: onboardingData.studentId || '',
-          major: onboardingData.department || '',
-          grade: parseInt(onboardingData.year) || 1,
-          semester: 1,
-          phone: '',
-          onboarding_completed: true,
-          interests: onboardingData.interests ? JSON.stringify(onboardingData.interests) : '[]',
-          completed_credits: parseInt(onboardingData.completedCredits) || 0,
-          career: onboardingData.career || '',
-          industry: onboardingData.industry || '',
-          remaining_semesters: parseInt(onboardingData.remainingSemesters) || 0,
-          max_credits_per_term: parseInt(onboardingData.maxCreditsPerTerm) || 18
-        });
-      } else {
-        // 기존 프로필 업데이트
-        await userProfile.update({
-          name: onboardingData.name || userProfile.name,
-          student_id: onboardingData.studentId || userProfile.student_id,
-          major: onboardingData.department || userProfile.major,
-          grade: parseInt(onboardingData.year) || userProfile.grade,
-          onboarding_completed: true,
-          interests: onboardingData.interests ? JSON.stringify(onboardingData.interests) : userProfile.interests,
-          completed_credits: parseInt(onboardingData.completedCredits) || userProfile.completed_credits || 0,
-          career: onboardingData.career || userProfile.career,
-          industry: onboardingData.industry || userProfile.industry,
-          remaining_semesters: parseInt(onboardingData.remainingSemesters) || userProfile.remaining_semesters || 0,
-          max_credits_per_term: parseInt(onboardingData.maxCreditsPerTerm) || userProfile.max_credits_per_term || 18
-        });
-      }
-
-      console.log(`User ${userId} onboarding completed with data:`, {
-        name: onboardingData.name,
-        grade: onboardingData.year,
-        completedCredits: onboardingData.completedCredits,
-        interests: onboardingData.interests
-      });
-
+      await this.updateProfile(userId, updateData);
+      
       return { message: '온보딩이 완료되었습니다.' };
     } catch (error) {
-      console.error('온보딩 완료 에러:', error.message);
+      console.error('온보딩 완료 처리 에러:', error.message);
       throw new Error(error.message);
     }
   },
 
   /**
-   * 사용자 총 이수 학점, 전공/교양 학점, 평균 평점 조회
+   * 사용자별 총 이수 학점 및 평균 평점 조회
+   * @param {number} userId - 사용자 ID
+   * @returns {Promise<Object>} 학점 요약 정보
    */
   async getCreditSummary(userId) {
     try {
       const records = await Records.findAll({
-        where: { userId }
+        where: { userId },
+        attributes: ['credits', 'grade', 'type']
       });
+
+      if (!records || records.length === 0) {
+        return {
+          totalCredits: 0,
+          majorCredits: 0,
+          liberalCredits: 0,
+          averageGrade: 0
+        };
+      }
 
       let totalCredits = 0;
       let majorCredits = 0;
       let liberalCredits = 0;
       let gradeSum = 0;
-      let gradedCredits = 0;
+      let gradeCount = 0;
 
-      const gradeMap = {
-        'A+': 4.5, 'A0': 4.0,
-        'B+': 3.5, 'B0': 3.0,
-        'C+': 2.5, 'C0': 2.0,
-        'D+': 1.5, 'D0': 1.0,
-        'F': 0.0,
-        'P': null, 'NP': null
-      };
-
-      // 강의코드 기준으로 중복 제거 후 최고 성적만 선택
-      const bestRecords = {};
       records.forEach(record => {
-        const key = record.courseCode || record.courseName;
-        const numericGrade = gradeMap[record.grade];
-
-        if (!bestRecords[key]) {
-          bestRecords[key] = record;
-        } else {
-          const existingGrade = gradeMap[bestRecords[key].grade];
-          if ((numericGrade ?? -1) > (existingGrade ?? -1)) {
-            bestRecords[key] = record;
-          }
-        }
-      });
-
-      // 중복 제거된 기록으로 학점 계산
-      Object.values(bestRecords).forEach((record) => {
-        const credits = record.credits || 0;
-
-        // P/NP 포함 여부 확인
-        if (!record.grade || record.grade === 'P' || record.grade === 'NP') {
-          totalCredits += credits;
-          if (['ME', 'MR'].includes(record.type)) {
-            majorCredits += credits;
-          } else if (['GE', 'GR'].includes(record.type)) {
-            liberalCredits += credits;
-          }
-          // 성적에는 반영하지 않음
-          return;
-        }
-
-        // 일반 성적 처리
+        const credits = parseInt(record.credits) || 0;
         totalCredits += credits;
-        if (['ME', 'MR'].includes(record.type)) {
+
+        // 카테고리별 학점 분류
+        if (record.type && (record.type.includes('MR') || record.type.includes('ME'))) {
           majorCredits += credits;
-        } else if (['GE', 'GR'].includes(record.type)) {
+        } else if (record.type && (record.type.includes('GR') || record.type.includes('GE'))) {
           liberalCredits += credits;
         }
-
-        const numericGrade = gradeMap[record.grade];
-        if (numericGrade !== undefined && numericGrade !== null) {
-          gradeSum += numericGrade * credits;
-          gradedCredits += credits;
+        
+        // 평점 계산 (A+=4.5, A=4.0, B+=3.5, B=3.0, C+=2.5, C=2.0, D+=1.5, D=1.0, F=0)
+        if (record.grade) {
+          const gradeValue = this.convertGradeToNumber(record.grade);
+          if (gradeValue >= 0) {
+            gradeSum += gradeValue * credits;
+            gradeCount += credits;
+          }
         }
       });
 
-      const averageGrade =
-        gradedCredits > 0 ? (gradeSum / gradedCredits).toFixed(2) : null;
+      const averageGrade = gradeCount > 0 ? (gradeSum / gradeCount).toFixed(2) : 0;
 
       return {
         totalCredits,
         majorCredits,
         liberalCredits,
-        averageGrade
+        averageGrade: parseFloat(averageGrade)
       };
     } catch (error) {
       console.error('학점 요약 조회 에러:', error.message);
       throw new Error(error.message);
     }
+  },
+
+  /**
+   * 문자열 성적을 숫자로 변환
+   * @param {string} grade - 문자열 성적 (A+, A, B+, B, C+, C, D+, D, F)
+   * @returns {number} 숫자 성적
+   */
+  convertGradeToNumber(grade) {
+    const gradeMap = {
+      'A+': 4.5, 'A': 4.0, 'A-': 3.7,
+      'B+': 3.5, 'B': 3.0, 'B-': 2.7,
+      'C+': 2.5, 'C': 2.0, 'C-': 1.7,
+      'D+': 1.5, 'D': 1.0, 'D-': 0.7,
+      'F': 0, 'P': -1, 'NP': -1 // P/NP는 평점 계산에서 제외
+    };
+    
+    return gradeMap[grade.toUpperCase()] !== undefined ? gradeMap[grade.toUpperCase()] : -1;
   }
 };
