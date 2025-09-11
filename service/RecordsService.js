@@ -6,6 +6,31 @@ const sequelize = require('../config/database');
 
 module.exports = {
     /**
+     * 새로운 수강내역 추가
+     */
+    async addRecord({ userId, courseName, courseCode, credits, grade, semester, year, category }) {
+        let lectureCode = null;
+        if (courseCode) {
+            lectureCode = await sequelize.models.LectureCode.findOne({
+                where: { code: courseCode }
+            });
+        }
+
+        const record = await Records.create({
+            userId,
+            courseName: courseName || (lectureCode ? lectureCode.name : null),
+            courseCode: courseCode || (lectureCode ? lectureCode.code : null),
+            credits: credits || (lectureCode ? lectureCode.credits : 0),
+            grade: grade || null,
+            semester: semester || null,
+            type: category || (lectureCode ? lectureCode.type : null),
+            conversionDate: new Date()
+        });
+
+        return record.toJSON();
+    },
+
+    /**
      * 시간표를 수강내역으로 변환
      */
     async convertTimetableToRecords({ userId, semester, overwrite = false }) {

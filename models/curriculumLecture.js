@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     lect_id: {
       type: DataTypes.INTEGER.UNSIGNED,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'lecture_code',
         key: 'id',
@@ -43,6 +43,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    status: {
+      type: DataTypes.ENUM('completed', 'current', 'planned', 'off-track'),
+      allowNull: false,
+      defaultValue: 'planned'
+    },
+    isRetaken: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    }
   }, {
     tableName: 'curri_lectures',
     underscored: true,
