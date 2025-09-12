@@ -2,7 +2,7 @@ const { Curriculum, CurriculumLecture, Records, LectureCode, UserProfile } = req
 const { mapRecordsToSemesters } = require('../utils/semester');
 const { Op } = require('sequelize');
 
-function determineStatus({ inputStatus, grade, semInGrade, currentGrade, currentSem, hasRecord }) {
+function determineStatus({ inputStatus, grade, semInGrade, currentGrade, currentSem, hasRecord, recordGrade }) {
   const sem = Number.isNaN(parseInt(semInGrade, 10))
     ? currentSem
     : parseInt(semInGrade, 10);
@@ -12,6 +12,10 @@ function determineStatus({ inputStatus, grade, semInGrade, currentGrade, current
   }
 
   if ((grade < currentGrade || (grade === currentGrade && sem < currentSem)) && !hasRecord) {
+    return 'off-track';
+  }
+
+  if (hasRecord && (recordGrade === 'NP' || recordGrade === 'F')) {
     return 'off-track';
   }
 
@@ -215,10 +219,11 @@ const CurriculumsService = {
             semInGrade,
             currentGrade,
             currentSem,
-            hasRecord
+            hasRecord,
+            recordGrade: record ? record.grade : null
           });
 
-          await CurriculumLecture.findOrCreate({
+          const [lec, created] = await CurriculumLecture.findOrCreate({
             where: { curri_id: curriculum.id, lect_id: lc.id },
             defaults: {
               curri_id: curriculum.id,
@@ -231,6 +236,10 @@ const CurriculumsService = {
               type: lc.type
             }
           });
+          
+          if (!created && lec.status !== status) {
+            await lec.update({ status });
+          }
         }
       }
 
@@ -534,7 +543,8 @@ const CurriculumsService = {
           semInGrade: data.semester,
           currentGrade,
           currentSem,
-          hasRecord
+          hasRecord,
+          recordGrade: data.recordGrade
         });
       }
 
@@ -549,6 +559,10 @@ const CurriculumsService = {
         status,
         isRetaken: data.forceRetaken || isRetaken
       });
+
+      if (lecture.status !== status) {
+        await lecture.update({ status });
+      }
 
       if ((status === 'completed' || status === 'current') && data.courseCode) {
       let creditsToSave = data.credits || 0;
@@ -642,7 +656,8 @@ const CurriculumsService = {
           semInGrade: updateData.semester,
           currentGrade,
           currentSem,
-          hasRecord
+          hasRecord,
+          recordGrade: updateData.recordGrade
         });
       }
 
