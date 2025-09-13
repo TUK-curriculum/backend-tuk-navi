@@ -44,7 +44,9 @@ module.exports = {
         semester: user.UserProfile?.semester || 1,
         phone: user.UserProfile?.phone || user.phone || '',
         onboardingCompleted: user.UserProfile?.onboarding_completed || false,
-        interests: user.UserProfile?.interests || [],
+        interests: user.UserProfile?.interests 
+          ? JSON.parse(user.UserProfile.interests) 
+          : [],
         completedCredits: user.UserProfile?.completed_credits || 0,
         career: user.UserProfile?.career || '',
         industry: user.UserProfile?.industry || '',
