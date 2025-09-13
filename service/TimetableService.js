@@ -406,7 +406,7 @@ class TimetableService {
                         if (lectureCode) {
                             codeId = lectureCode.id;
                         } else {
-                            console.warn("[update] LectureCode not found:", course.code_id);
+                            console.warn("[update] 강의 코드를 찾을 수 없습니다:", course.code_id);
                         }
                     }
 
@@ -709,7 +709,6 @@ class TimetableService {
     }
 
     // 커리큘럼 과목과 실제 강의 매칭
-    // 커리큘럼 과목과 실제 강의 매칭
     static async findMatchingLectures(curriculumLectures) {
         const lectureGroups = {};
         
@@ -744,7 +743,7 @@ class TimetableService {
                     code: lecture.LectureCode?.code || String(lecture.code_id),
                     type: lecture.LectureCode?.type || 'GE',
                     name: lecture.name,
-                    professor: lecture.Professor?.name || '(교수 미정)',
+                    professor: lecture.Professor?.name || '미배정',
                     schedule: this.parseSchedule(lecture.schedule),
                     room: lecture.room,
                     max_students: lecture.max_students,
@@ -849,10 +848,6 @@ class TimetableService {
                             id: timetableId,
                             lectures: [...currentCombination]
                         });
-
-                        console.log(
-                            `[SUCCESS] ${validTimetables.length}번째 유효한 시간표 발견!`
-                        );
                     }
                 }
                 return;
@@ -868,9 +863,8 @@ class TimetableService {
         };
 
         backtrack(0, []);
-        console.log(`[FINAL] 총 ${attemptCount}개 조합 시도, ${validTimetables.length}개 성공`);
 
-        // 모든 조합을 다 반환 (상위 5개는 scoreAndRankTimetables에서 결정)
+        // 모든 조합 반환
         return validTimetables;
     }
 
@@ -884,16 +878,16 @@ class TimetableService {
             
             lectures.forEach(otherLecture => {
                 if (this.hasTimeConflict([lecture], otherLecture)) {
-                    conflictScore += 10; // 충돌마다 10점 추가
+                    conflictScore += 10;
                 }
             });
         });
         
-        // 야간 강의는 점수를 낮춤 (선호)
+        // 야간 강의
         const hasEveningClass = lecture.schedule.some(slot => slot.period >= 9);
         if (hasEveningClass) conflictScore -= 20;
         
-        // 금요일 강의는 점수를 낮춤 (일반적으로 충돌 적음)
+        // 금요일 강의
         const hasFridayClass = lecture.schedule.some(slot => slot.day === 'friday');
         if (hasFridayClass) conflictScore -= 10;
         
@@ -907,7 +901,6 @@ class TimetableService {
                     if (newSlot.day !== existingSlot.day) continue;
                     
                     if (newSlot.period === existingSlot.period) {
-                        // 디버깅용 상세 로그
                         console.log(`[DETAIL] 충돌 상세:`, {
                             new: `${newLecture.name} - ${newSlot.day} ${newSlot.period}교시`,
                             existing: `${lecture.name} - ${existingSlot.day} ${existingSlot.period}교시`,
@@ -930,18 +923,15 @@ class TimetableService {
 
     // 강의 추가 가능 여부 확인
     static canAddLecture(currentLectures, newLecture, preferences, lectureGroups) {
-        // 1. 시간 충돌은 무조건 배제
         if (this.hasTimeConflict(currentLectures, newLecture)) {
             return false;
         }
 
-        // 2. 커리큘럼 과목이면 교수/시간 preferences 무시 (시간만 위에서 체크했으니 바로 통과)
         const isCurriculumLecture = !!lectureGroups[newLecture.name];
         if (isCurriculumLecture) {
             return true;
         }
 
-        // 3. 일반 과목은 기존 조건 적용
         if (preferences.avoid_professors?.includes(newLecture.professor)) {
             const alternatives = lectureGroups[newLecture.name]?.filter(
                 l => l.professor !== newLecture.professor
@@ -966,17 +956,16 @@ class TimetableService {
     // 시간대 선호도 확인
     static checkTimePreferences(lecture, preferences) {
         for (const slot of lecture.schedule) {
-        // 오전 수업 제외 (1-2교시)
-        if (preferences.exclude_morning && slot.period === 1) {
-            return false;
+            // 1교시 제외
+            if (preferences.exclude_morning && slot.period === 1) {
+                return false;
+            }
+            
+            // 저녁 수업 제외 (12-14교시)
+            if (preferences.exclude_evening && [12, 13, 14].includes(slot.period)) {
+                return false;
+            }
         }
-        
-        // 저녁 수업 제외 (11-14교시)
-        if (preferences.exclude_evening && [12, 13, 14].includes(slot.period)) {
-            return false;
-        }
-        }
-        
         return true;
     }
 
@@ -1000,15 +989,15 @@ class TimetableService {
         const dailySchedule = {};
         
         for (const lecture of lectures) {
-        for (const slot of lecture.schedule) {
-            if (!dailySchedule[slot.day]) {
-            dailySchedule[slot.day] = [];
+            for (const slot of lecture.schedule) {
+                if (!dailySchedule[slot.day]) {
+                dailySchedule[slot.day] = [];
+                }
+                
+                if (!dailySchedule[slot.day].includes(lecture)) {
+                dailySchedule[slot.day].push(lecture);
+                }
             }
-            
-            if (!dailySchedule[slot.day].includes(lecture)) {
-            dailySchedule[slot.day].push(lecture);
-            }
-        }
         }
         
         return dailySchedule;
@@ -1038,10 +1027,7 @@ class TimetableService {
             };
         });
 
-        // 점수순 정렬
         const sorted = scoredTimetables.sort((a, b) => b.score - a.score);
-
-        // 1️⃣ 시간대 패턴으로 그룹핑
         const timetableMap = new Map();
 
         for (const t of sorted) {
@@ -1053,7 +1039,6 @@ class TimetableService {
             if (!timetableMap.has(pattern)) {
                 timetableMap.set(pattern, { ...t, lectures: [...t.lectures] });
             } else {
-                // 2️⃣ 이미 같은 패턴이 있으면 교수명 합치기
                 const existing = timetableMap.get(pattern);
                 existing.lectures.forEach((lec, idx) => {
                     const other = t.lectures[idx];
@@ -1177,12 +1162,6 @@ class TimetableService {
 
     // 시간표 저장
     static async saveTimetable(userId, timetable, semesterCode, { isGenerated = false } = {}) {
-        console.log("[DEBUG] saveTimetable CALLED", {
-            userId,
-            semesterCode,
-            isGenerated,
-            lecturesCount: timetable?.lectures?.length
-        });
         const transaction = await Schedule.sequelize.transaction();
         try {
             // 현재 학기 스케줄 조회 또는 생성
@@ -1250,13 +1229,6 @@ class TimetableService {
                         ];
 
 
-                    console.log("[DEBUG] lecture raw:", {
-                        name: lecture.name,
-                        rawCodeId: lecture.code_id,
-                        parsedCodeId: Number(lecture.code_id),
-                        typeOf: typeof lecture.code_id
-                    });
-
                     let codeId = null;
                     if (lecture.code_id) {
                         if (typeof lecture.code_id === 'number') {
@@ -1290,7 +1262,6 @@ class TimetableService {
                         codeId,
                         color: this.assignUniqueColor(lecture.name, courseColorMap, usedColors)
                     });
-                    console.log("[DEBUG] lecture.code_id =", lecture.code_id, typeof lecture.code_id);
                 }
             }
 

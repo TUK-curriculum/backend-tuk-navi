@@ -69,7 +69,7 @@ router.delete('/course/:semester/:slotId', authMiddleware, async (req, res) => {
 });
 
 
-// POST /timetable - 시간표 생성 
+// POST /timetable - 새 시간표 생성 
 router.post('/', authMiddleware, async (req, res) => {
     try {
         const { semesterCode, courses, year, isGenerated } = req.body;
@@ -96,7 +96,7 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
-// PUT /timetable/:id - 기존 시간표 업데이트 (saveTimetable 사용)
+// PUT /timetable/:id - 기존 시간표 업데이트
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const { id } = req.params;
