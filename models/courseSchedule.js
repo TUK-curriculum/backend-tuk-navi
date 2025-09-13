@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
         },
         courseId: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
             field: 'course_id'
         },

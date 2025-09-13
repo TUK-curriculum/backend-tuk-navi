@@ -4,6 +4,49 @@ const recordsService = require('../service/RecordsService');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 /**
+ * [POST] /records
+ * 새로운 수강내역 추가
+ */
+router.post('/', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { courseName, courseCode, credits, grade, semester, year, category } = req.body;
+
+        if (!courseName || !credits || !year || !category) {
+            return res.status(400).json({
+                success: false,
+                message: '필수 항목(courseName, credits, year, category)을 입력해야 합니다.'
+            });
+        }
+
+        const newRecord = await recordsService.addRecord({
+            userId,
+            courseName,
+            courseCode: courseCode || null,
+            credits,
+            grade: grade || null,
+            semester,
+            year,
+            category
+        });
+
+        res.status(201).json({
+            success: true,
+            message: '수강 내역이 성공적으로 추가되었습니다.',
+            data: newRecord
+        });
+    } catch (error) {
+        console.error('[POST /records] 수강내역 추가 에러:', error.message);
+        res.status(500).json({
+            success: false,
+            message: '서버 오류로 수강 내역을 추가할 수 없습니다.',
+            error: error.message
+        });
+    }
+});
+
+
+/**
  * [POST] /records/convert/:semester
  * 시간표를 수강내역으로 변환
  */

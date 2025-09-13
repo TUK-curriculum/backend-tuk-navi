@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     semester: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     type: {
       type: DataTypes.STRING,

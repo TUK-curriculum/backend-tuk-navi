@@ -22,6 +22,9 @@ db.Review = require('./Review')(sequelize, Sequelize.DataTypes);
 db.Opinion = require('./opinion')(sequelize, Sequelize.DataTypes);
 db.RecentLecture = require('./recentLecture')(sequelize, Sequelize.DataTypes);
 db.LectureReplacement = require('./lectureReplacement')(sequelize, Sequelize.DataTypes);
+db.Professor = require('./professor')(sequelize, Sequelize.DataTypes);
+db.PreferredProfessor = require('./preferredProfessor')(sequelize, Sequelize.DataTypes);
+db.Major = require('./major')(sequelize, Sequelize.DataTypes);
 
 // Register new user-related models
 
@@ -88,6 +91,17 @@ db.Note.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 db.ChatMessage.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 db.Notification.belongsTo(db.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
+db.Professor.belongsTo(db.Major, { foreignKey: 'major_id' });
+db.Major.hasMany(db.Professor, { foreignKey: 'major_id' });
+
+db.Professor.hasMany(db.PreferredProfessor, { foreignKey: 'professor_id', onDelete: 'CASCADE' });
+db.PreferredProfessor.belongsTo(db.Professor, { foreignKey: 'professor_id' });
+
+db.User.hasMany(db.PreferredProfessor, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+db.PreferredProfessor.belongsTo(db.User, { foreignKey: 'user_id' });
+
+db.Professor.hasMany(db.Lecture, { foreignKey: 'prof_id', onDelete: 'CASCADE' });
+db.Lecture.belongsTo(db.Professor, { foreignKey: 'prof_id' });
 
 db.Course.hasMany(db.CourseSchedule, { foreignKey: 'courseId', as: 'schedules', onDelete: 'CASCADE' });
 db.Course.hasMany(db.Enrollment, { foreignKey: 'courseId', onDelete: 'CASCADE' });
