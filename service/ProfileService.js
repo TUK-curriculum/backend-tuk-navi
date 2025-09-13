@@ -45,7 +45,9 @@ module.exports = {
         phone: user.UserProfile?.phone || user.phone || '',
         onboardingCompleted: user.UserProfile?.onboarding_completed || false,
         interests: user.UserProfile?.interests 
-          ? JSON.parse(user.UserProfile.interests) 
+          ? (typeof user.UserProfile.interests === 'string' 
+              ? JSON.parse(user.UserProfile.interests) 
+              : user.UserProfile.interests)
           : [],
         completedCredits: user.UserProfile?.completed_credits || 0,
         career: user.UserProfile?.career || '',
