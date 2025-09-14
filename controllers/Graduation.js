@@ -10,6 +10,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
  * 졸업 요건 조회 (학점, 필수과목, 자격증, 실습, 종합설계 등)
  */
 router.get('/status', authMiddleware, async (req, res) => {
+  console.log('[DEBUG] graduation/status userId:', req.user?.userId);
   try {
     const data = await graduationService.getStatusOverview(req.user.userId);
     res.status(200).json({
@@ -22,6 +23,25 @@ router.get('/status', authMiddleware, async (req, res) => {
     res.status(400).json({ 
       success: false, 
       message: error.message 
+    });
+  }
+});
+
+/** [POST] /graduation/status
+ * 졸업 정보 저장
+ */
+router.post('/status', authMiddleware, async (req, res) => {
+  try {
+    await graduationService.saveGraduationInfo(req.user.userId, req.body);
+    res.status(200).json({
+      success: true,
+      message: '졸업 정보 저장 성공'
+    });
+  } catch (error) {
+    console.error('[POST /graduation/status] 졸업 정보 저장 에러:', error);
+    res.status(400).json({
+      success: false,
+      message: error.message
     });
   }
 });
