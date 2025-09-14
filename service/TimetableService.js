@@ -784,6 +784,7 @@ class TimetableService {
     // 커리큘럼 과목과 실제 강의 매칭
     static async findMatchingLectures(curriculumLectures) {
         const lectureGroups = {};
+        const notFoundLectures = []; 
         
         for (const curriLecture of curriculumLectures) {
             const lectures = await Lecture.findAll({
@@ -793,24 +794,15 @@ class TimetableService {
                     code_id: curriLecture.lect_id
                 },
                 include: [
-                    {
-                        model: Professor,
-                        as: 'Professor',
-                        attributes: ['name']
-                    },
-                    {
-                        model: LectureCode,
-                        as: 'LectureCode',
-                        attributes: ['id', 'code', 'type']
-                    }
+                    { model: Professor, as: 'Professor', attributes: ['name'] },
+                    { model: LectureCode, as: 'LectureCode', attributes: ['id', 'code', 'type'] }
                 ],
                 order: [[{ model: Professor, as: 'Professor' }, 'name']]
             });
 
             if (lectures.length > 0) {
                 console.log(`[MATCH] ${curriLecture.name} (${curriLecture.lect_id}) → ${lectures.length}개 매칭됨`);
-                
-                const processedLectures = lectures.map(lecture => ({
+                lectureGroups[curriLecture.name] = lectures.map(lecture => ({
                     id: lecture.id,
                     code_id: lecture.code_id,
                     code: lecture.LectureCode?.code || String(lecture.code_id),
@@ -825,16 +817,25 @@ class TimetableService {
                     semester: lecture.semester,
                     credits: curriLecture.credits
                 }));
-                
-                lectureGroups[curriLecture.name] = processedLectures;
             } else {
-                console.warn(`[NOT FOUND] ${curriLecture.name} (${curriLecture.lect_id}) → 매칭된 강좌 없음`);
+                console.warn(`[NOT FOUND] ${curriLecture.name} (${curriLecture.lect_id}) → 매칭 없음`);
+                notFoundLectures.push({
+                    name: curriLecture.name,
+                    lect_id: curriLecture.lect_id,
+                    credits: curriLecture.credits,
+                    grade: curriLecture.grade,
+                    semester: curriLecture.semester
+                });
+            }
+            if (notFoundLectures.length > 0) {
+                console.log("[DEBUG] 매칭되지 않은 강의 목록: ");
+                notFoundLectures.forEach(l =>
+                    console.log(`- ${l.name} (lect_id=${l.lect_id}, ${l.grade}학년 ${l.semester}학기, ${l.credits}학점)`)
+                );
             }
         }
-        
         return lectureGroups;
     }
-
 
     // JSON 스케줄 데이터 파싱
     static parseSchedule(scheduleJson) {
@@ -1044,15 +1045,19 @@ class TimetableService {
 
     // 시간표 전체 유효성 검사
     static isValidTimetable(lectures, preferences, curriculumLectures = []) {
-        // 학점 체크
+        const matchedLectureIds = new Set(lectures.map(lec => lec.code_id));
+
+        const requiredCredits = curriculumLectures
+            .filter(curri => matchedLectureIds.has(curri.lect_id))
+            .reduce((sum, curri) => sum + curri.credits, 0);
+
         const totalCredits = lectures.reduce((sum, lec) => sum + lec.credits, 0);
-        const requiredCredits = curriculumLectures.reduce((sum, curri) => sum + curri.credits, 0);
-        
+
         if (requiredCredits > 0 && totalCredits < requiredCredits) {
             console.log(`[INVALID] 학점 부족: ${totalCredits}/${requiredCredits}`);
             return false;
         }
-        
+
         console.log(`[VALID] 모든 검증 통과 - 학점: ${totalCredits}`);
         return true;
     }
