@@ -72,7 +72,7 @@ app.use('/profile', authMiddleware, profileController);
 app.use('/records', authMiddleware, recordsController);
 app.use('/researches', authMiddleware, researchesController);
 app.use('/reviews', authMiddleware, reviewsController);
-app.use('/courses', coursesController);
+app.use('/courses', authMiddleware, coursesController);
 app.use('/timetable', authMiddleware, timetableController);
 app.use('/notes', authMiddleware, notesController);
 app.use('/notifications', authMiddleware, notificationsController);

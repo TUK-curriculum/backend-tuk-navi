@@ -98,11 +98,22 @@ class CourseService {
         return { hasConflict: true, conflictingCourses };
     }
 
-    // ===== Recent Lectures (강의 기본 정보) =====
-    static async listRecentLectures({ semester, major = 'CE' }) {
-        return RecentLecture.findAll({
-        where: { semester, major },
-        order: [['code', 'ASC']],
+    // ===== Recent Lectures =====
+    static async listRecentLectures({ major = 'CE' }) {
+        const lectures = await RecentLecture.findAll({
+            where: { major },
+            order: [['code', 'ASC']],
+        });
+
+        return lectures.map(l => {
+            let semesterCode;
+            if (l.semester === 1) semesterCode = '2025-1';
+            else if (l.semester === 2) semesterCode = '2024-2';
+
+            return {
+            ...l.toJSON(),
+            semesterCode,
+            };
         });
     }
 
@@ -110,40 +121,39 @@ class CourseService {
         return RecentLecture.findOne({ where: { code } });
     }
 
-    // ===== S3 Syllabus (강의계획서) =====
-    static async getSyllabiByCourseCode(semester, courseCode) {
-        // semester 값이 '1' 이면 2025, '2' 이면 2024 로 처리
-        const year = semester === '1' ? '2025' : '2024';
+    // ===== S3 Syllabus =====
+    static async getSyllabiByCourseCode(courseCode, semester) {
+        const year = semester === 1 ? '2025' : '2024';
         const semesterCode = `${year}-${semester}`;
 
         const prefix = `${process.env.AWS_FOLDER_PREFIX}${semesterCode}/`;
-
         console.log('[getSyllabiByCourseCode] Searching S3 prefix:', prefix);
 
         try {
             const { Contents } = await s3.listObjectsV2({
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Prefix: prefix,
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Prefix: prefix,
             }).promise();
 
             if (!Contents || Contents.length === 0) return [];
 
             const pdfs = Contents.filter(obj =>
-                obj.Key.endsWith('.pdf') && obj.Key.includes(courseCode)
+            obj.Key.endsWith('.pdf') && obj.Key.includes(courseCode)
             );
 
             return pdfs.map(obj => {
-                const fileName = obj.Key.split('/').pop().replace('.pdf', '');
-                const [code, section, professor, ...courseNameParts] = fileName.split('-');
-                const courseName = courseNameParts.join('-');
+            const fileName = obj.Key.split('/').pop().replace('.pdf', '');
+            const [code, section, professor, ...courseNameParts] = fileName.split('-');
+            const courseName = courseNameParts.join('-');
 
-                return {
-                    courseCode: code,
-                    section,
-                    professor,
-                    courseName,
-                    url: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${obj.Key}`,
-                };
+            return {
+                courseCode: code,
+                section,
+                professor,
+                courseName,
+                semester: semesterCode,
+                url: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${obj.Key}`,
+            };
             });
         } catch (err) {
             console.error('[getSyllabiByCourseCode] S3 검색 오류:', err);

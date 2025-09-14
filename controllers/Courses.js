@@ -5,19 +5,17 @@ const CourseService = require('../service/CourseService');
 
 /**
  * 최근 강의 목록 조회
- * GET /courses?semester=2025-1&major=CE
+ * GET /courses?major=CE
  */
-router.get('/', async (req, res) => {  // authMiddleware 제거
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { semester, major } = req.query;
-    console.log('Query params:', { semester, major }); // 디버깅용
-    
-    const lectures = await CourseService.listRecentLectures({ semester, major });
-    console.log('Found lectures:', lectures.length); // 디버깅용
-    
+    const { major } = req.query;
+    const lectures = await CourseService.listRecentLectures({ major });
+    console.log('[DEBUG] /courses result:', lectures.length, lectures);
+        
     res.json({ success: true, data: lectures });
   } catch (err) {
-    console.error('Error:', err); // 디버깅용
+    console.error('Error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -38,12 +36,17 @@ router.get('/:code', authMiddleware, async (req, res) => {
 
 /**
  * 특정 강의 S3 강의계획서 조회
- * GET /courses/:code/syllabi?semester=2025-1
+ * GET /courses/:code/syllabi
  */
 router.get('/:code/syllabi', authMiddleware, async (req, res) => {
   try {
     const { semester } = req.query;
-    const syllabi = await CourseService.getSyllabiByCourseCode(semester, req.params.code);
+
+    const syllabi = await CourseService.getSyllabiByCourseCode(
+      req.params.code,
+      Number(semester)
+    );
+
     res.json({ success: true, data: syllabi });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
