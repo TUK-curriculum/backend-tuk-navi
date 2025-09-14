@@ -1,34 +1,37 @@
 module.exports = (sequelize, DataTypes) => {
-    const Review = sequelize.define('Review', {
+    const Resource = sequelize.define('Resource', {
         id: {
             type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             autoIncrement: true
         },
-        recordId: {
+        courseId: {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
             references: { model: 'courses', key: 'id' },
             onDelete: 'CASCADE'
         },
-        userId: {
+            uploaderId: {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
-            references: { model: 'users', key: 'id' },
-            onDelete: 'CASCADE'
+            references: { model: 'users', key: 'id' }
         },
-        rating: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            title: {
+            type: DataTypes.STRING,
             allowNull: false
         },
-        content: {
+            fileUrl: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+            description: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: true
         }
     }, {
-        tableName: 'reviews',
+        tableName: 'resources',
         timestamps: true
     });
-
-    return Review;
+    
+    return Resource;
 };
