@@ -479,8 +479,20 @@ class TimetableService {
             
             if (!schedule) return false;
 
+            const semesterCode = schedule.semesterCode;
+
             await TimetableSlot.destroy({ where: { scheduleId: schedule.id }, transaction });
             await CustomEvent.destroy({ where: { scheduleId: schedule.id }, transaction });
+            
+            const deletedRecords = await Records.destroy({
+                where: { 
+                    userId, 
+                    semester: semesterCode,
+                    sourceScheduleId: schedule.id
+                },
+                transaction
+            });
+
             await schedule.destroy({ transaction });
 
             await transaction.commit();
