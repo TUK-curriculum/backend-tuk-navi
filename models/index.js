@@ -18,7 +18,7 @@ db.UserCredits = require('./userCredits')(sequelize, Sequelize.DataTypes);
 db.Timetable = require('./timetable')(sequelize, Sequelize.DataTypes);
 db.RequiredCourse = require('./requiredCourse')(sequelize, Sequelize.DataTypes);
 db.RequiredCredit = require('./requiredCredit')(sequelize, Sequelize.DataTypes);
-db.Review = require('./Review')(sequelize, Sequelize.DataTypes);
+db.Review = require('./review')(sequelize, Sequelize.DataTypes);
 db.Opinion = require('./opinion')(sequelize, Sequelize.DataTypes);
 db.RecentLecture = require('./recentLecture')(sequelize, Sequelize.DataTypes);
 db.LectureReplacement = require('./lectureReplacement')(sequelize, Sequelize.DataTypes);
@@ -44,7 +44,8 @@ db.CustomEvent = require('./customEvent')(sequelize, Sequelize.DataTypes);
 db.Note = require('./note')(sequelize, Sequelize.DataTypes);
 db.ChatMessage = require('./chatMessage')(sequelize, Sequelize.DataTypes);
 db.Notification = require('./notification')(sequelize, Sequelize.DataTypes);
-
+db.ReviewFile = require('./reviewFile')(sequelize, Sequelize.DataTypes);
+db.Resource = require('./resource')(sequelize, Sequelize.DataTypes);
 
 // 모델 간 관계 설정
 db.User.hasOne(db.UserCredits, { foreignKey: 'userId', onDelete: 'CASCADE' });
@@ -133,7 +134,19 @@ db.Timetable.belongsTo(db.User, { foreignKey: 'userId' });
 
 db.TimetableSlot.belongsTo(db.LectureCode, { foreignKey: 'code_id', onDelete: 'SET NULL' });
 db.LectureCode.hasMany(db.TimetableSlot, { foreignKey: 'code_id', onDelete: 'SET NULL' });
-  
+
+db.Review.hasMany(db.ReviewFile, { foreignKey: 'reviewId', as: 'files', onDelete: 'CASCADE' });
+db.ReviewFile.belongsTo(db.Review, { foreignKey: 'reviewId', as: 'review' });
+
+db.Records.hasMany(db.Review, { foreignKey: 'recordId', as: 'reviews', onDelete: 'CASCADE' });
+db.User.hasMany(db.Review, { foreignKey: 'userId', as: 'reviews', onDelete: 'CASCADE' });
+
+db.Course.hasMany(db.Resource, { foreignKey: 'courseId', as: 'resources', onDelete: 'CASCADE' });
+db.Resource.belongsTo(db.Course, { foreignKey: 'courseId', as: 'course' });
+
+db.User.hasMany(db.Resource, { foreignKey: 'uploaderId', as: 'uploadedResources', onDelete: 'CASCADE' });
+db.Resource.belongsTo(db.User, { foreignKey: 'uploaderId', as: 'uploader' });
+
 // Sequelize 인스턴스 추가
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

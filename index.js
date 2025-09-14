@@ -49,6 +49,7 @@ const lecturesController = require('./controllers/Lectures');
 const profileController = require('./controllers/Profile');
 const recordsController = require('./controllers/Records');
 const researchesController = require('./controllers/Researches');
+const resourceController = require('./controllers/Resources');
 const reviewsController = require('./controllers/Reviews');
 const coursesController = require('./controllers/Courses');
 const timetableController = require('./controllers/Timetable');
@@ -71,12 +72,13 @@ app.use('/profile', authMiddleware, profileController);
 app.use('/records', authMiddleware, recordsController);
 app.use('/researches', authMiddleware, researchesController);
 app.use('/reviews', authMiddleware, reviewsController);
-app.use('/courses', authMiddleware, coursesController);
+app.use('/courses', coursesController);
 app.use('/timetable', authMiddleware, timetableController);
 app.use('/notes', authMiddleware, notesController);
 app.use('/notifications', authMiddleware, notificationsController);
 app.use('/chat', authMiddleware, chatController);
 app.use('/professors', professorController);
+app.use('/resources', resourceController);
 
 /* 인증이 필요 없는 경로 */
 app.use('/auth', authController);
