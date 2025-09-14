@@ -481,20 +481,81 @@ class TimetableService {
 
             const semesterCode = schedule.semesterCode;
 
-            await TimetableSlot.destroy({ where: { scheduleId: schedule.id }, transaction });
-            await CustomEvent.destroy({ where: { scheduleId: schedule.id }, transaction });
-            
-            const deletedRecords = await Records.destroy({
+            const recordsToDelete = await Records.findAll({
                 where: { 
                     userId, 
-                    semester: semesterCode,
-                    sourceScheduleId: schedule.id
+                    semester: semesterCode
+                },
+                attributes: ['courseCode'],
+                transaction
+            });
+            
+            const courseCodes = recordsToDelete.map(r => r.courseCode).filter(Boolean);
+
+            await TimetableSlot.destroy({ where: { scheduleId: schedule.id }, transaction });
+            await CustomEvent.destroy({ where: { scheduleId: schedule.id }, transaction });
+            await Records.destroy({
+                where: { 
+                    userId, 
+                    semester: semesterCode
                 },
                 transaction
             });
 
-            await schedule.destroy({ transaction });
+            if (courseCodes.length > 0) {
+                const profile = await UserProfile.findOne({
+                    where: { userId },
+                    attributes: ['grade', 'semester'],
+                    transaction
+                });
+                
+                const currentGrade = profile?.grade || 1;
+                const currentSem = profile?.semester || 1;
+                
+                const [year, semesterNum] = semesterCode.split('-');
+                const deletedSem = parseInt(semesterNum);
+                const deletedGrade = currentGrade;
+                
+                let newStatus;
+                if (deletedGrade < currentGrade || (deletedGrade === currentGrade && deletedSem < currentSem)) {
+                    newStatus = 'off-track';
+                } else {
+                    newStatus = 'planned';
+                }
 
+                const userCurriculums = await Curriculum.findAll({
+                    where: { userId },
+                    attributes: ['id'],
+                    transaction
+                });
+                
+                if (userCurriculums.length > 0) {
+                    const curriculumIds = userCurriculums.map(c => c.id);
+                    
+                    const lectureCodes = await LectureCode.findAll({
+                        where: { code: { [Op.in]: courseCodes } },
+                        attributes: ['id'],
+                        transaction
+                    });
+                    
+                    const lectureCodeIds = lectureCodes.map(lc => lc.id);
+                    
+                    if (lectureCodeIds.length > 0) {
+                        await CurriculumLecture.update(
+                            { status: newStatus },
+                            {
+                                where: {
+                                    curri_id: { [Op.in]: curriculumIds },
+                                    lect_id: { [Op.in]: lectureCodeIds }
+                                },
+                                transaction
+                            }
+                        );
+                    }
+                }
+            }
+
+            await schedule.destroy({ transaction });
             await transaction.commit();
             return true;
         } catch (error) {
