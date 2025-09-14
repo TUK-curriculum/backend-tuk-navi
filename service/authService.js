@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
-const { User, EmailVerification, RefreshToken } = require('../models');
+const { User, UserProfile, EmailVerification, RefreshToken } = require('../models');
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -62,6 +62,19 @@ async function findOrCreateUser(email, username, provider) {
       username,
       password: null,
       provider
+    });
+
+    await UserProfile.create({
+      userId: user.id,
+      name: username,
+      student_id: Date.now(),
+      major: '',
+      phone: '',
+      grade: 1,
+      semester: 1,
+      interests: null,
+      enrollment_year: null,
+      graduation_year: null,
     });
   }
   return user;
@@ -163,13 +176,46 @@ async function getAccount(userId) {
   return { userId: u.id, email: u.email, username: u.username, major: u.major, phone: u.phone, provider: u.provider, createdAt: u.createdAt, updatedAt: u.updatedAt };
 }
 
-async function updateAccount(userId, username, major) {
+async function updateAccount(userId, fields) {
   const u = await User.findByPk(userId);
   if (!u) throw new Error('유효하지 않은 사용자입니다.');
-  if (username?.trim()) u.username = username;
-  if (major?.trim()) u.major = major;
+
+  const { UserProfile } = require('../models');
+  const profile = await UserProfile.findOne({ where: { userId } });
+  if (!profile) throw new Error('UserProfile not found');
+
+  // User 업데이트
+  if (fields.username?.trim()) u.username = fields.username;
+  if (fields.major?.trim()) u.major = fields.major;
+  if (fields.phone?.trim()) u.phone = fields.phone;
   await u.save();
-  return { userId: u.id, username: u.username, major: u.major, updatedAt: u.updatedAt };
+
+  // UserProfile 업데이트
+  await profile.update({
+    student_id: fields.studentId ?? profile.student_id,
+    grade: fields.grade != null ? Number(fields.grade) : profile.grade,
+    semester: fields.semester != null ? Number(fields.semester) : profile.semester,
+    enrollment_year: fields.enrollmentYear ?? profile.enrollment_year,
+    graduation_year: fields.graduationYear ?? profile.graduation_year,
+    major: fields.major ?? profile.major,
+    phone: fields.phone ?? profile.phone,
+    interests: fields.interests ? JSON.stringify(fields.interests) : profile.interests
+  });
+
+  return {
+    userId: u.id,
+    username: u.username,
+    email: u.email,
+    major: u.major,
+    phone: u.phone,
+    provider: u.provider,
+    studentId: profile.student_id,
+    grade: profile.grade,
+    semester: profile.semester,
+    enrollmentYear: profile.enrollment_year,
+    graduationYear: profile.graduation_year,
+    updatedAt: u.updatedAt
+  };
 }
 
 async function deleteAccount(userId) {
@@ -251,6 +297,12 @@ async function registerSocialUser(username, major) {
   return { userId: u.id, username: u.username, major: u.major, createdAt: u.createdAt };
 }
 
+async function findUserById(id) {
+  const user = await User.findByPk(id);
+  if (!user) throw new Error('사용자를 찾을 수 없습니다.');
+  return user;
+}
+
 module.exports = {
   signup, signupKakao, signupGoogle,
   login, loginKakao, loginGoogle,
@@ -260,5 +312,6 @@ module.exports = {
   sendPasswordReset, verifyPhoneNumber, logout,
   recoverIdByPhone, recoverPasswordByEmail,
   registerSocialUser,
-  findOrCreateUser // 여기 반드시 포함!
+  findOrCreateUser,
+  findUserById
 };

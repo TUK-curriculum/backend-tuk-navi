@@ -35,16 +35,23 @@ passport.use(new GoogleStrategy(
   }
 ));
 
-// 세션 기반 로그인용 (선택)
+// 세션 기반 로그인용 
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await authService.findUserById(id);
+    const { User } = require('../models');
+    const user = await User.findByPk(id);
+    
+    if (!user) {
+      return done(new Error('사용자를 찾을 수 없습니다.'), null);
+    }
+    
     done(null, user);
   } catch (err) {
+    console.error('deserializeUser Error:', err);
     done(err, null);
   }
 });

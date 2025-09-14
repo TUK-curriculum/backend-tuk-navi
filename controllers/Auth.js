@@ -55,16 +55,52 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Google 로그인 성공',
-      user: req.user
-    });
+  passport.authenticate('google', { failureRedirect: 'http://localhost:3001/login?error=google_failed' }),
+  async (req, res) => {
+    try {
+      const googleUser = req.user;
+      
+      if (!googleUser) {
+        return res.redirect('http://localhost:3001/login?error=no_user');
+      }
+
+      // UserProfile 확인 (생성하지 않음)
+      const { UserProfile } = require('../models');
+      const userProfile = await UserProfile.findOne({ where: { userId: googleUser.id } });
+
+      const tokens = authService.generateTokens(googleUser.id);
+      
+      const { RefreshToken } = require('../models');
+      await RefreshToken.upsert({ 
+        token: tokens.refreshToken, 
+        userId: googleUser.id 
+      });
+
+      // UserProfile이 없으면 기본 정보만 전달 (온보딩 필요)
+      const userInfo = encodeURIComponent(JSON.stringify({
+        userId: googleUser.id,
+        name: googleUser.displayName || googleUser.username || '사용자',
+        email: googleUser.email,
+        major: userProfile?.major || '', // 없으면 빈 문자열
+        studentId: userProfile?.student_id || '',
+        grade: userProfile?.grade || null, // null로 설정하여 온보딩 필요 표시
+        phone: userProfile?.phone || '',
+        provider: 'google',
+        needsOnboarding: !userProfile // 온보딩 필요 여부 명시
+      }));
+
+      res.redirect(`http://localhost:3001/auth/callback?` + 
+        `accessToken=${tokens.accessToken}&` +
+        `refreshToken=${tokens.refreshToken}&` +
+        `user=${userInfo}`
+      );
+
+    } catch (error) {
+      console.error('Google callback error:', error);
+      res.redirect(`http://localhost:3001/login?error=${encodeURIComponent(error.message)}`);
+    }
   }
 );
-
 
 
 /**
@@ -131,9 +167,22 @@ router.get('/account', authMiddleware, async (req, res) => {
  */
 router.put('/account', authMiddleware, async (req, res) => {
   try {
-    const updated = await authService.updateAccount(req.user.userId, req.body.username, req.body.major);
+    const {
+      username,
+      major,
+      studentId,
+      grade,
+      semester,
+      phone,
+      enrollmentYear,
+      graduationYear
+    } = req.body;
+
+    const updated = await authService.updateAccount(req.user.userId, req.body);
+
     res.status(200).json({ message: '회원 정보 수정 성공', user: updated });
   } catch (error) {
+    console.error('Account update error:', error);
     res.status(400).json({ error: error.message });
   }
 });
