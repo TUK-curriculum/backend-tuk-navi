@@ -25,6 +25,8 @@ db.LectureReplacement = require('./lectureReplacement')(sequelize, Sequelize.Dat
 db.Professor = require('./professor')(sequelize, Sequelize.DataTypes);
 db.PreferredProfessor = require('./preferredProfessor')(sequelize, Sequelize.DataTypes);
 db.Major = require('./major')(sequelize, Sequelize.DataTypes);
+db.Prerequisite = require('./prerequisite')(sequelize, Sequelize.DataTypes);
+db.RequiredKnowledge = require('./requiredKnowledge')(sequelize, Sequelize.DataTypes);
 
 // Register new user-related models
 
@@ -146,6 +148,18 @@ db.Resource.belongsTo(db.Course, { foreignKey: 'courseId', as: 'course' });
 
 db.User.hasMany(db.Resource, { foreignKey: 'uploaderId', as: 'uploadedResources', onDelete: 'CASCADE' });
 db.Resource.belongsTo(db.User, { foreignKey: 'uploaderId', as: 'uploader' });
+
+db.Prerequisite.belongsTo(db.LectureCode, { foreignKey: 'lecture_code', as: 'lecture' });
+db.Prerequisite.belongsTo(db.LectureCode, { foreignKey: 'pre_lecture_code', as: 'prerequisiteLecture' });
+
+db.LectureCode.hasMany(db.Prerequisite, { foreignKey: 'lecture_code', as: 'prerequisites' });
+db.LectureCode.hasMany(db.Prerequisite, { foreignKey: 'pre_lecture_code', as: 'isPrerequisiteFor' });
+
+db.RequiredKnowledge.belongsTo(db.LectureCode, { foreignKey: 'lecture_code', as: 'lecture' });
+db.RequiredKnowledge.belongsTo(db.LectureCode, { foreignKey: 'required_lecture_code', as: 'requiredLecture' });
+
+db.LectureCode.hasMany(db.RequiredKnowledge, { foreignKey: 'lecture_code', as: 'requiredKnowledge' });
+db.LectureCode.hasMany(db.RequiredKnowledge, { foreignKey: 'required_lecture_code', as: 'isRequiredFor' });
 
 // Sequelize 인스턴스 추가
 db.sequelize = sequelize;

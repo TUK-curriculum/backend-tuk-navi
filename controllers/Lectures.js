@@ -3,6 +3,7 @@ const router = express.Router();
 const AWS = require('aws-sdk');
 const NodeCache = require('node-cache');
 const authMiddleware = require('../middlewares/authMiddleware');
+const { LectureCode, Prerequisite, RequiredKnowledge } = require('../models'); // 이 줄 추가
 require('dotenv').config();
 
 // 기존 강의 API
@@ -223,6 +224,52 @@ router.get('/syllabus/professors', authMiddleware, async (req, res) => {
     res.status(200).json(professors);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// 선이수, 필요 지식 조회
+router.get('/:lectureCode/prerequisites', authMiddleware, async (req, res) => {
+  try {
+    const { lectureCode } = req.params;
+    
+    const lecture = await LectureCode.findOne({
+      where: { code: lectureCode }
+    });
+    
+    if (!lecture) {
+      return res.status(404).json({ 
+        prerequisites: [],
+        requiredKnowledge: []
+      });
+    }
+
+    // 선이수 과목 조회
+    const prerequisites = await Prerequisite.findAll({
+      where: { lecture_code: lecture.id },
+      include: [{
+        model: LectureCode,
+        as: 'prerequisiteLecture',
+        attributes: ['name']
+      }]
+    });
+
+    // 필요 지식 조회
+    const requiredKnowledge = await RequiredKnowledge.findAll({
+      where: { lecture_code: lecture.id },
+      include: [{
+        model: LectureCode,
+        as: 'requiredLecture',
+        attributes: ['name']
+      }]
+    });
+    
+    res.json({
+      prerequisites: prerequisites.map(p => p.prerequisiteLecture.name),
+      requiredKnowledge: requiredKnowledge.map(r => r.requiredLecture.name)
+    });
+  } catch (error) {
+    console.error('선이수 과목 조회 오류:', error);
+    res.status(500).json({ error: '서버 오류' });
   }
 });
 
