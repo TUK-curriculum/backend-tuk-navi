@@ -27,6 +27,7 @@ db.PreferredProfessor = require('./preferredProfessor')(sequelize, Sequelize.Dat
 db.Major = require('./major')(sequelize, Sequelize.DataTypes);
 db.Prerequisite = require('./prerequisite')(sequelize, Sequelize.DataTypes);
 db.RequiredKnowledge = require('./requiredKnowledge')(sequelize, Sequelize.DataTypes);
+db.GraduationRequirement = require('./graduationRequirement')(sequelize, Sequelize.DataTypes);
 
 // Register new user-related models
 
