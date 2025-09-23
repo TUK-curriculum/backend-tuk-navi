@@ -1,4 +1,4 @@
-const { Records, Certificate, RecentLecture, GraduationInfo, LectureReplacement, UserProfile } = require('../models');
+const { Records, Certificate, RecentLecture, GraduationInfo, LectureReplacement, UserProfile, GraduationRequirement } = require('../models');
 const { Op } = require('sequelize');
 
 const toMajorCode = (dept) => {
@@ -8,13 +8,28 @@ const toMajorCode = (dept) => {
     return null;
 };
 
-function getThresholds(enrollmentYear) {
-    if (enrollmentYear === 2012) return { totalCredits: 150, liberalArts: 27, majorCredits: 75, practicalCount: 1 };
-    if (enrollmentYear >= 2013 && enrollmentYear <= 2016) return { totalCredits: 150, liberalArts: 27, majorCredits: 75, practicalCount: 1 };
-    if (enrollmentYear >= 2017 && enrollmentYear <= 2020) return { totalCredits: 140, liberalArts: 25, majorCredits: 70, practicalCount: 1 };
-    if (enrollmentYear >= 2021 && enrollmentYear <= 2024) return { totalCredits: 140, liberalArts: 42, majorCredits: 75, practicalCount: 1 };
-    if (enrollmentYear >= 2025) return { totalCredits: 130, liberalArts: 37, majorCredits: 69, practicalCount: 1 };
-    return { totalCredits: 140, liberalArts: 25, majorCredits: 70, practicalCount: 1 };
+async function getThresholds(enrollmentYear) {
+    const requirement = await GraduationRequirement.findOne({
+        where: {
+            entry_year_start: { [Op.lte]: enrollmentYear },
+            [Op.or]: [
+                { entry_year_end: null },
+                { entry_year_end: { [Op.gte]: enrollmentYear } }
+            ]
+        },
+        raw: true
+    });
+
+    if (!requirement) {
+        throw new Error(`졸업 요건을 찾을 수 없습니다: ${enrollmentYear}`);
+    }
+
+    return {
+        totalCredits: requirement.total_credits,
+        liberalArts: requirement.liberal_arts,
+        majorCredits: requirement.major,
+        practicalCount: 1,
+    };
 }
 
 const isPassedGrade = (g) => (g !== 'F' && g !== 'NP');
@@ -110,7 +125,7 @@ async function getCapstoneCompleted(userId) {
 
 async function getGraduationPass(userId, profile) {
     const recs = await Records.findAll({ where: { userId }, raw: true });
-    const thresholds = getThresholds(Number(profile.enrollment_year));
+    const thresholds = await getThresholds(Number(profile.enrollment_year));
 
     let total = 0, lib = 0, major = 0, practical = 0;
     for (const r of recs) {
@@ -131,7 +146,7 @@ async function getGraduationPass(userId, profile) {
 
 async function getDisqualifications(userId, profile) {
     const disc = [];
-    const thresholds = getThresholds(Number(profile.enrollment_year));
+    const thresholds = await getThresholds(Number(profile.enrollment_year));
 
     if (await Certificate.count({ where: { userId } }) === 0) disc.push('어학자격 미취득');
 
@@ -139,7 +154,7 @@ async function getDisqualifications(userId, profile) {
     if (req.missing.some(m => m.category === 'major_required')) disc.push('전공필수 미이수');
     if (req.missing.some(m => m.category === 'general_required')) disc.push('교양필수 미이수');
 
-    const practicalTaken = await Records.count({ where: { userId, type: 'practical', grade: { [Op.ne]: null } } });
+    const practicalTaken = await Records.count({ where: { userId, type: 'RE', grade: { [Op.ne]: null } } });
     if (practicalTaken < thresholds.practicalCount) disc.push('현장실무교과 미이수');
 
     if (!(await getCapstoneCompleted(userId))) disc.push('종합설계 미이수');
