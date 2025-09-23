@@ -59,6 +59,7 @@ const chatController = require('./controllers/Chat');
 const syllabusRoutes = require('./api/syllabus');
 const lecturesRoutes = require('./api/lectures');
 const professorController = require('./controllers/Professor');
+const userController = require('./controllers/User');
 
 app.use('/api/lectures', lecturesRoutes);
 app.use('/api', syllabusRoutes);
@@ -79,6 +80,7 @@ app.use('/notifications', authMiddleware, notificationsController);
 app.use('/chat', authMiddleware, chatController);
 app.use('/professors', professorController);
 app.use('/resources', resourceController);
+app.use('/users', userController);
 
 /* 인증이 필요 없는 경로 */
 app.use('/auth', authController);
