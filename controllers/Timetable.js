@@ -286,7 +286,7 @@ router.post('/generate', authMiddleware, async (req, res) => {
       });
     }
 
-    const timetables = await TimetableService.generateTimetables(
+    const { timetables, is_avoid_failed, avoid_failed_reasons } = await TimetableService.generateTimetables(
       req.user.userId,
       curriculumId,
       preferences,
@@ -299,7 +299,9 @@ router.post('/generate', authMiddleware, async (req, res) => {
       data: {
         timetables,
         total: timetables.length,
-        hasMore: timetables.length === 5
+        hasMore: timetables.length === 5,
+        is_avoid_failed,
+        avoid_failed_reasons
       }
     });
   } catch (error) {
@@ -328,7 +330,7 @@ router.post('/refresh', authMiddleware, async (req, res) => {
       });
     }
 
-    const timetables = await TimetableService.refreshTimetables(
+    const { timetables, is_avoid_failed, avoid_failed_reasons } = await TimetableService.refreshTimetables(
       req.user.userId,
       curriculumId,
       preferences,
@@ -341,7 +343,9 @@ router.post('/refresh', authMiddleware, async (req, res) => {
       data: {
         timetables,
         total: timetables.length,
-        hasMore: timetables.length === 5
+        hasMore: timetables.length === 5,
+        is_avoid_failed,
+        avoid_failed_reasons
       }
     });
   } catch (error) {
