@@ -759,6 +759,9 @@ class TimetableService {
         timetables: topTimetables,
         is_avoid_failed: isAvoidFailed,
         avoid_failed_reasons: avoidFailedReasons,
+        not_found: curriculumLectures
+          .filter((curriLecture) => !availableLectures[curriLecture.name])
+          .map((curriLecture) => curriLecture.name),
       };
     } catch (error) {
       console.error("시간표 생성 에러:", error);
